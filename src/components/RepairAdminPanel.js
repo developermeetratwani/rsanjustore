@@ -832,7 +832,7 @@ const RepairAdminPanel = ({ onLogout }) => {
 
   const sendWhatsApp = (bill) => {
     if (!bill.customerPhone) return;
-    const msg = encodeURIComponent(`Hello ${bill.customerName}! Thank you for choosing R Sanju Store. We hope you're happy with the service 😊 Please leave us a Google Review 🙏: https://share.google/9eVOobcsrXlsmEt3p`);
+    const msg = encodeURIComponent(`Hello ${bill.customerName}! Thank you for choosing R Sanju Store. We hope you're happy with the service 😊 Please leave us a Google Review 🙏: https://share.google/9eVOobcsrXlsmEt3p\n\nFollow us on Instagram too: https://www.instagram.com/rsanju_phone_hub?utm_source=ig_web_button_share_sheet&stkn=ZDNlZDc0MzIxNw==`);
     const phone = bill.customerPhone.replace(/\D/g, '').slice(-10);
     // wa.me is the official universal link for WhatsApp, fixing iOS issues
     window.open(`https://wa.me/91${phone}?text=${msg}`, '_blank');
