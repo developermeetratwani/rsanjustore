@@ -275,6 +275,7 @@ const RepairAdminPanel = ({ onLogout }) => {
   const [showRepairerForm, setShowRepairerForm] = useState(false);
   const [editingRepairer, setEditingRepairer] = useState(null);
   const [repairerForm, setRepairerForm] = useState({ name: '', type: 'commission', commission: 0, pin: '0000' });
+  const [selectedTechFolder, setSelectedTechFolder] = useState(null);
 
   // Bill form / modal
   const [showBillForm, setShowBillForm] = useState(false);
@@ -1155,32 +1156,173 @@ const RepairAdminPanel = ({ onLogout }) => {
         {/* ---- TECHNICIANS ---- */}
         {activeTab === 'repairers' && (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <h2 className="section-title">Technicians</h2>
-              <button className="btn-create-bill" onClick={() => { setEditingRepairer(null); setRepairerForm({ name: '', type: 'commission', commission: 0, pin: '0000' }); setShowRepairerForm(true); }}>
-                ➕ Add Technician
-              </button>
-            </div>
-            {repairers.length === 0 ? (
-              <div className="empty-state"><div className="empty-icon">👨‍🔧</div><h3>No Technicians Added</h3></div>
-            ) : (
-              <div className="repairers-grid">
-                {repairers.map(r => (
-                  <div key={r.id} className="repairer-card">
-                    <div className="repairer-header">
-                      <h3>{r.name}</h3>
-                      <span className="repairer-type status-in-progress">{r.type === 'commission' ? `${r.commission}% Comm.` : 'Salaried'}</span>
+            {selectedTechFolder ? (
+              // --- TECHNICIAN FOLDER VIEW ---
+              (() => {
+                const r = selectedTechFolder;
+                const rBills = bills.filter(b => b.repairerName === r.name || (b.custodyHistory?.length > 0 && b.custodyHistory.slice(-1)[0].holder === r.name) || (b.pendingCustody?.targetHolder === r.name));
+                const completed = rBills.filter(b => b.repairerName === r.name && b.status === 'completed');
+                const refunded = rBills.filter(b => b.repairerName === r.name && b.status === 'refunded');
+                const deleted = rBills.filter(b => b.repairerName === r.name && b.status === 'deleted');
+                const active = rBills.filter(b => b.status === 'in-progress' && (
+                  b.pendingCustody?.targetHolder === r.name ||
+                  (!b.pendingCustody?.targetHolder && b.custodyHistory?.slice(-1)[0]?.holder === r.name) ||
+                  (!b.pendingCustody?.targetHolder && (!b.custodyHistory || b.custodyHistory.length === 0) && b.repairerName === r.name)
+                ));
+
+                const totalRev = completed.reduce((s, b) => s + (+b.finalCharge || 0), 0);
+                const totalComm = completed.reduce((s, b) => s + (+b.commission || 0), 0);
+                const refundedComm = refunded.reduce((s, b) => s + (+b.commission || 0), 0);
+
+                return (
+                  <div className="technician-folder">
+                    <button onClick={() => setSelectedTechFolder(null)} style={{ background: 'transparent', border: 'none', color: '#2563eb', fontWeight: 600, cursor: 'pointer', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span>←</span> Back to Technicians
+                    </button>
+                    
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 20, marginBottom: 24, background: '#fff', border: '1px solid #e8e8e8', borderRadius: 12, padding: 24 }}>
+                      <div>
+                        <h2 style={{ margin: '0 0 4px', fontSize: 24, color: '#1c1c1e', display: 'flex', alignItems: 'center', gap: 8 }}>
+                          👨‍🔧 {r.name}
+                        </h2>
+                        <div style={{ color: '#6b7280', fontSize: 14 }}>
+                          {r.type === 'commission' ? `${r.commission}% Commission Based` : 'Salaried'} • PIN: <code style={{ color: '#fff', background: '#333', padding: '2px 6px', borderRadius: 4 }}>{r.pin || '0000'}</code>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: 16 }}>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontSize: 12, color: '#6b7280', textTransform: 'uppercase', fontWeight: 600 }}>Total Revenue</div>
+                          <div style={{ fontSize: 22, fontWeight: 800, color: '#1c1c1e' }}>{fmtMoney(totalRev)}</div>
+                        </div>
+                        <div style={{ width: 1, background: '#e5e5e5' }}></div>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontSize: 12, color: '#6b7280', textTransform: 'uppercase', fontWeight: 600 }}>Earned</div>
+                          <div style={{ fontSize: 22, fontWeight: 800, color: '#10b981' }}>{fmtMoney(totalComm)}</div>
+                        </div>
+                      </div>
                     </div>
-                    <div style={{ fontSize: 13, color: '#aaa', marginTop: 8 }}>
-                      PIN: <code style={{ color: '#fff', background: '#222', padding: '2px 6px', borderRadius: 4 }}>{r.pin || '0000'}</code>
-                    </div>
-                    <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-                      <button style={BS('#1a1a1a', '#fff', '1px solid #333')} onClick={() => startEditRepairer(r)}>Edit</button>
-                      <button style={BS('#222', '#f44', '1px solid #444')} onClick={() => deleteRepairer(r.id)}>Delete</button>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
+                      {/* Active Jobs */}
+                      <div>
+                        <h3 style={{ fontSize: 16, color: '#1c1c1e', marginBottom: 12, display: 'flex', justifyContent: 'space-between' }}>
+                          <span>🔧 Active Jobs (With Tech)</span>
+                          <span style={{ background: '#e0e7ff', color: '#4338ca', padding: '2px 8px', borderRadius: 12, fontSize: 12 }}>{active.length}</span>
+                        </h3>
+                        {active.length === 0 ? <p style={{ color: '#9ca3af', fontSize: 13 }}>No active jobs.</p> : (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                            {active.map(b => (
+                              <div key={b.id} style={{ background: '#fff', border: '1px solid #e5e5e5', borderRadius: 8, padding: 12, fontSize: 13 }}>
+                                <div style={{ fontWeight: 600, color: '#1c1c1e', display: 'flex', justifyContent: 'space-between' }}>
+                                  {b.deviceModel} <span>{b.customerPhone}</span>
+                                </div>
+                                <div style={{ color: '#6b7280', marginTop: 4 }}>{b.customerName}</div>
+                                {b.pendingCustody?.targetHolder === r.name && (
+                                  <div style={{ marginTop: 8, fontSize: 12, color: '#d97706', background: '#fef3c7', padding: '4px 8px', borderRadius: 4, display: 'inline-block' }}>
+                                    Pending Acceptance from {b.pendingCustody.transferredBy}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Completed Jobs */}
+                      <div>
+                        <h3 style={{ fontSize: 16, color: '#1c1c1e', marginBottom: 12, display: 'flex', justifyContent: 'space-between' }}>
+                          <span>✅ Completed</span>
+                          <span style={{ background: '#dcfce7', color: '#15803d', padding: '2px 8px', borderRadius: 12, fontSize: 12 }}>{completed.length}</span>
+                        </h3>
+                        {completed.length === 0 ? <p style={{ color: '#9ca3af', fontSize: 13 }}>No completed jobs.</p> : (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxHeight: 500, overflowY: 'auto', paddingRight: 4 }}>
+                            {completed.map(b => (
+                              <div key={b.id} style={{ background: '#fff', border: '1px solid #e5e5e5', borderRadius: 8, padding: 12, fontSize: 13, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div>
+                                  <div style={{ fontWeight: 600, color: '#1c1c1e' }}>{b.deviceModel}</div>
+                                  <div style={{ color: '#6b7280', marginTop: 4 }}>{b.customerName} • {fmtDate(b.createdAt)}</div>
+                                </div>
+                                <div style={{ textAlign: 'right' }}>
+                                  <div style={{ color: '#1c1c1e', fontWeight: 600 }}>{fmtMoney(b.finalCharge)}</div>
+                                  <div style={{ color: '#10b981', fontSize: 12, fontWeight: 700 }}>+{fmtMoney(b.commission)}</div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Refunded/Deleted Jobs */}
+                      <div>
+                        <h3 style={{ fontSize: 16, color: '#1c1c1e', marginBottom: 12, display: 'flex', justifyContent: 'space-between' }}>
+                          <span>💸 Refunded / Deleted</span>
+                          <span style={{ background: '#fee2e2', color: '#b91c1c', padding: '2px 8px', borderRadius: 12, fontSize: 12 }}>{refunded.length + deleted.length}</span>
+                        </h3>
+                        {refunded.length === 0 && deleted.length === 0 ? <p style={{ color: '#9ca3af', fontSize: 13 }}>No refunded or deleted jobs.</p> : (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                            {refunded.map(b => (
+                              <div key={b.id} style={{ background: '#fff', border: '1px solid #fca5a5', borderRadius: 8, padding: 12, fontSize: 13 }}>
+                                <div style={{ fontWeight: 600, color: '#991b1b', display: 'flex', justifyContent: 'space-between' }}>
+                                  {b.deviceModel} <span style={{ fontSize: 11, background: '#fef2f2', padding: '2px 6px', borderRadius: 4 }}>REFUNDED</span>
+                                </div>
+                                <div style={{ color: '#6b7280', marginTop: 4 }}>{b.customerName}</div>
+                                <div style={{ color: '#ef4444', fontSize: 12, fontWeight: 700, marginTop: 4 }}>Returned to customer (was {fmtMoney(b.commission)})</div>
+                              </div>
+                            ))}
+                            {deleted.map(b => (
+                              <div key={b.id} style={{ background: '#fff', border: '1px solid #d1d5db', borderRadius: 8, padding: 12, fontSize: 13, opacity: 0.7 }}>
+                                <div style={{ fontWeight: 600, color: '#4b5563', display: 'flex', justifyContent: 'space-between' }}>
+                                  {b.deviceModel} <span style={{ fontSize: 11, background: '#f3f4f6', padding: '2px 6px', borderRadius: 4 }}>DELETED</span>
+                                </div>
+                                <div style={{ color: '#6b7280', marginTop: 4 }}>{b.customerName}</div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
+                );
+              })()
+            ) : (
+              // --- STANDARD GRID VIEW ---
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                  <h2 className="section-title">Technicians</h2>
+                  <button className="btn-create-bill" onClick={() => { setEditingRepairer(null); setRepairerForm({ name: '', type: 'commission', commission: 0, pin: '0000' }); setShowRepairerForm(true); }}>
+                    ➕ Add Technician
+                  </button>
+                </div>
+                {repairers.length === 0 ? (
+                  <div className="empty-state"><div className="empty-icon">👨‍🔧</div><h3>No Technicians Added</h3></div>
+                ) : (
+                  <div className="repairers-grid">
+                    {repairers.map(r => (
+                      <div key={r.id} className="repairer-card" style={{ display: 'flex', flexDirection: 'column' }}>
+                        <div className="repairer-header">
+                          <h3>{r.name}</h3>
+                          <span className="repairer-type status-in-progress">{r.type === 'commission' ? `${r.commission}% Comm.` : 'Salaried'}</span>
+                        </div>
+                        <div style={{ fontSize: 13, color: '#aaa', marginTop: 8, flex: 1 }}>
+                          PIN: <code style={{ color: '#fff', background: '#222', padding: '2px 6px', borderRadius: 4 }}>{r.pin || '0000'}</code>
+                        </div>
+                        
+                        <button 
+                          style={{ marginTop: 16, width: '100%', padding: '10px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }}
+                          onClick={() => setSelectedTechFolder(r)}
+                        >
+                          📂 Open Folder / View Work
+                        </button>
+                        
+                        <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                          <button style={{ ...BS('#1a1a1a', '#fff', '1px solid #333'), flex: 1 }} onClick={() => startEditRepairer(r)}>Edit</button>
+                          <button style={{ ...BS('#222', '#f44', '1px solid #444'), flex: 1 }} onClick={() => deleteRepairer(r.id)}>Delete</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
