@@ -468,6 +468,14 @@ const RepairAdminPanel = ({ onLogout }) => {
     fetchStaff();
     syncFromMongoDB({ silent: true });
     fetchTechnicians();
+
+    // Auto-sync every 10 seconds
+    const syncInterval = setInterval(() => {
+      syncFromMongoDB({ silent: true });
+      fetchTechnicians();
+    }, 10000);
+
+    return () => clearInterval(syncInterval);
   }, [currentUser]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ---------- Staff Management Actions (Master Admin) ----------
