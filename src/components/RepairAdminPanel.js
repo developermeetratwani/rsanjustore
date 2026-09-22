@@ -1757,8 +1757,12 @@ const RepairAdminPanel = ({ onLogout }) => {
                         const comm = calcCommission(fc, exTotal, billForm.repairerName);
                         const profit = fc - exTotal - comm;
                         return (<>
-                          <Row label={`Commission (${r?.commission || 0}%)`} val={fmtMoney(comm)} />
-                          <Row label="Store Profit" val={fmtMoney(profit)} bold />
+                          <div style={{ display: 'flex', justifyContent: 'space-between', color: '#aaa', fontSize: 13, marginBottom: 4 }}>
+                            <span>Commission ({r?.commission || 0}%)</span><span>{fmtMoney(comm)}</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', color: '#fff', fontSize: 14, fontWeight: 'bold' }}>
+                            <span>Store Profit</span><span>{fmtMoney(profit)}</span>
+                          </div>
                         </>);
                       })()}
                     </div>
