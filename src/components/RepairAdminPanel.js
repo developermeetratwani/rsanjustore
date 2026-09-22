@@ -861,7 +861,7 @@ const RepairAdminPanel = ({ onLogout }) => {
     });
   };
 
-  const completedBills = bills.filter(b => b.status === 'completed');
+  const completedBills = useMemo(() => bills.filter(b => b.status === 'completed'), [bills]);
   const filteredCompletedBills = filterBillsByDate(completedBills);
 
   // ---------- Metrics ----------
@@ -876,12 +876,12 @@ const RepairAdminPanel = ({ onLogout }) => {
   };
   const today = getLocalDateStr(new Date());
 
-  const pendingCount = appointments.filter(a => a.status === 'pending').length;
-  const inProgressCount = bills.filter(b => b.status === 'in-progress').length;
+  const pendingCount = useMemo(() => appointments.filter(a => a.status === 'pending').length, [appointments]);
+  const inProgressCount = useMemo(() => bills.filter(b => b.status === 'in-progress').length, [bills]);
   const completedCount = completedBills.length;
-  const todayRevenue = completedBills
+  const todayRevenue = useMemo(() => completedBills
     .filter(b => getLocalDateStr(b.completedAt || b.createdAt) === today)
-    .reduce((s, b) => s + (+b.finalCharge || 0), 0);
+    .reduce((s, b) => s + (+b.finalCharge || 0), 0), [completedBills, today]);
 
   // ---------- CSV Export ----------
   const downloadCSV = () => {
@@ -910,7 +910,7 @@ const RepairAdminPanel = ({ onLogout }) => {
   };
 
   // ---------- Search Filter ----------
-  const searchResults = searchTriggered
+  const searchResults = useMemo(() => searchTriggered
     ? bills.filter(b => {
         const q = searchPhone.trim().toLowerCase();
         const bDate = (b.createdAt || '').slice(0, 10);
@@ -926,7 +926,7 @@ const RepairAdminPanel = ({ onLogout }) => {
         if (searchDate) return matchDate;
         return false;
       })
-    : [];
+    : [], [searchTriggered, bills, searchPhone, searchDate]);
 
   const tabsList = [
     { id: 'bills', label: 'Bills' },
@@ -1057,7 +1057,7 @@ const RepairAdminPanel = ({ onLogout }) => {
             </div>
             {(() => {
               const displayBills = showAllBills
-                ? bills
+                ? bills.slice(0, 200)
                 : bills.filter(b =>
                     getLocalDateStr(b.createdAt) === today ||
                     getLocalDateStr(b.completedAt) === today ||
