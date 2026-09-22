@@ -353,7 +353,7 @@ const TechnicianPortal = () => {
 
         {/* Stats Row */}
         <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
-          <StatCard icon="💰" label="Net Earned" value={fmt(stats.netEarned)} sub="Total from completed jobs" color="#10b981" accent="#0a1a0f" />
+          <StatCard icon="💰" label="Net Earned" value={fmt(stats.netEarned)} sub="Total from completed jobs" color={stats.netEarned < 0 ? "#f87171" : "#10b981"} accent={stats.netEarned < 0 ? "#1a0a0a" : "#0a1a0f"} />
           <StatCard icon="✅" label="Jobs Done" value={stats.completed.length} sub={`₹${stats.totalBillCharged.toFixed(0)} billed total`} color="#60a5fa" accent="#0a0f1a" />
           <StatCard icon="🔧" label="Active Jobs" value={stats.active.length} sub="Phones with you now" color="#fbbf24" accent="#1a1500" />
           <StatCard icon="💸" label="Refunded" value={stats.refunded.length} sub="Returned to customer" color="#f87171" accent="#1a0a0a" />
@@ -415,8 +415,8 @@ const TechnicianPortal = () => {
                             <div style={{ fontSize: 11, color: '#444', marginTop: 1 }}>{bill.customerName} • {fmtDate(bill.createdAt)}</div>
                           </div>
                           <div style={{ fontSize: 13, fontWeight: 600, color: '#e5e7eb', alignSelf: 'center' }}>{fmt(bill.finalCharge)}</div>
-                          <div style={{ fontSize: 13, fontWeight: 700, color: bill.status === 'refunded' ? '#f87171' : '#10b981', alignSelf: 'center' }}>
-                            {bill.status === 'refunded' ? `-${fmt(bill.commission)}` : fmt(bill.commission)}
+                          <div style={{ fontSize: 13, fontWeight: 700, color: (bill.status === 'refunded' || bill.commission < 0) ? '#f87171' : '#10b981', alignSelf: 'center' }}>
+                            {bill.status === 'refunded' ? `-${fmt(Math.abs(bill.commission))}` : fmt(bill.commission)}
                           </div>
                           <div style={{ alignSelf: 'center' }}>
                             <StatusBadge status={bill.status} />
@@ -429,7 +429,7 @@ const TechnicianPortal = () => {
                   <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', padding: '14px 16px', background: '#111', borderTop: '2px solid #222' }}>
                     <div style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>TOTAL ({bills.filter(b => b.status !== 'deleted').length} bills)</div>
                     <div style={{ fontSize: 13, fontWeight: 700, color: '#60a5fa' }}>{fmt(bills.filter(b => b.status !== 'deleted').reduce((s, b) => s + (+b.finalCharge || 0), 0))}</div>
-                    <div style={{ fontSize: 14, fontWeight: 800, color: '#10b981' }}>{fmt(stats.netEarned)}</div>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: stats.netEarned < 0 ? '#f87171' : '#10b981' }}>{fmt(stats.netEarned)}</div>
                     <div style={{ fontSize: 11, color: '#555' }}>Net earned</div>
                   </div>
                 </div>

@@ -262,6 +262,7 @@ const RepairAdminPanel = ({ onLogout }) => {
   const [searchDate, setSearchDate] = useState('');
   const [searchTriggered, setSearchTriggered] = useState(false);
   const [showAllBills, setShowAllBills] = useState(false);
+  const [billsStatusFilter, setBillsStatusFilter] = useState('all');
 
   // Staff and MongoDB connection state
   const [staffUsers, setStaffUsers] = useState([]);
@@ -1053,17 +1054,39 @@ const RepairAdminPanel = ({ onLogout }) => {
                 >
                   {showAllBills ? `All (${bills.length})` : 'Today'}
                 </button>
+                <div style={{ width: '1px', height: '20px', background: '#e0e0e0', margin: '0 8px' }}></div>
+                {['all', 'in-progress', 'completed', 'refunded', 'deleted'].map(f => (
+                  <button
+                    key={f}
+                    onClick={() => setBillsStatusFilter(f)}
+                    style={{
+                      background: billsStatusFilter === f ? '#1c1c1e' : '#f5f5f4',
+                      border: '1px solid',
+                      borderColor: billsStatusFilter === f ? '#1c1c1e' : '#e0e0e0',
+                      color: billsStatusFilter === f ? '#fff' : '#636366',
+                      borderRadius: 20,
+                      padding: '4px 12px',
+                      fontSize: 12,
+                      cursor: 'pointer',
+                      fontWeight: 500,
+                      textTransform: 'capitalize'
+                    }}
+                  >
+                    {f.replace('-', ' ')}
+                  </button>
+                ))}
               </div>
               <button className="btn-create-bill" onClick={() => openBillForm()}>+ New Bill</button>
             </div>
             {(() => {
-              const displayBills = showAllBills
+              const baseBills = showAllBills
                 ? bills.slice(0, 200)
                 : bills.filter(b =>
                     getLocalDateStr(b.createdAt) === today ||
                     getLocalDateStr(b.completedAt) === today ||
                     b.status === 'in-progress'
                   );
+              const displayBills = baseBills.filter(b => billsStatusFilter === 'all' || b.status === billsStatusFilter);
 
               if (displayBills.length === 0) {
                 return (
