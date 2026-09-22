@@ -953,7 +953,7 @@ const RepairAdminPanel = ({ onLogout }) => {
           </div>
 
           {/* Center: DB status + sync */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, justifyContent: 'center' }}>
+          <div className="header-db-status" style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, justifyContent: 'center' }}>
             <span style={{
               display: 'inline-flex', alignItems: 'center', gap: 5,
               fontSize: 11, padding: '3px 9px', borderRadius: 20,
@@ -965,6 +965,7 @@ const RepairAdminPanel = ({ onLogout }) => {
               {mongoConnected === null ? 'Connecting' : mongoConnected ? 'Synced' : 'Offline'}
             </span>
             <button
+              className="header-sync-btn"
               onClick={() => syncFromMongoDB({ silent: false })}
               disabled={isSyncing}
               title="Sync from MongoDB"
@@ -975,11 +976,8 @@ const RepairAdminPanel = ({ onLogout }) => {
                 display: 'inline-flex', alignItems: 'center', gap: 4, transition: 'all 0.15s'
               }}
             >
-              {isSyncing ? 'Syncing…' : '↻ Sync'}
+              <span>{isSyncing ? 'Syncing…' : '↻ Sync'}</span>
             </button>
-            <span style={{ fontSize: 11, color: '#8e8e93', display: 'none' }} className="user-label">
-              {currentUser.username}
-            </span>
           </div>
 
           <div className="repair-actions">
@@ -1035,9 +1033,9 @@ const RepairAdminPanel = ({ onLogout }) => {
         {/* ---- BILLS ---- */}
         {activeTab === 'bills' && (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <h2 className="section-title">Bills</h2>
+            <div className="bills-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <div className="bills-filter-row" style={{ display: 'flex', alignItems: 'center', gap: 10, overflow: 'hidden' }}>
+                <h2 className="section-title" style={{ flexShrink: 0 }}>Bills</h2>
                 <button
                   onClick={() => setShowAllBills(v => !v)}
                   style={{
@@ -1049,34 +1047,37 @@ const RepairAdminPanel = ({ onLogout }) => {
                     padding: '4px 12px',
                     fontSize: 12,
                     cursor: 'pointer',
-                    fontWeight: 500
+                    fontWeight: 500,
+                    flexShrink: 0
                   }}
                 >
                   {showAllBills ? `All (${bills.length})` : 'Today'}
                 </button>
-                <div style={{ width: '1px', height: '20px', background: '#e0e0e0', margin: '0 8px' }}></div>
-                {['all', 'in-progress', 'completed', 'refunded', 'deleted'].map(f => (
-                  <button
-                    key={f}
-                    onClick={() => setBillsStatusFilter(f)}
-                    style={{
-                      background: billsStatusFilter === f ? '#1c1c1e' : '#f5f5f4',
-                      border: '1px solid',
-                      borderColor: billsStatusFilter === f ? '#1c1c1e' : '#e0e0e0',
-                      color: billsStatusFilter === f ? '#fff' : '#636366',
-                      borderRadius: 20,
-                      padding: '4px 12px',
-                      fontSize: 12,
-                      cursor: 'pointer',
-                      fontWeight: 500,
-                      textTransform: 'capitalize'
-                    }}
-                  >
-                    {f.replace('-', ' ')}
-                  </button>
-                ))}
+                <div style={{ width: '1px', height: '20px', background: '#e0e0e0', margin: '0 4px', flexShrink: 0 }}></div>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  {['all', 'in-progress', 'completed', 'refunded', 'deleted'].map(f => (
+                    <button
+                      key={f}
+                      onClick={() => setBillsStatusFilter(f)}
+                      style={{
+                        background: billsStatusFilter === f ? '#1c1c1e' : '#f5f5f4',
+                        border: '1px solid',
+                        borderColor: billsStatusFilter === f ? '#1c1c1e' : '#e0e0e0',
+                        color: billsStatusFilter === f ? '#fff' : '#636366',
+                        borderRadius: 20,
+                        padding: '4px 10px',
+                        fontSize: 11,
+                        cursor: 'pointer',
+                        fontWeight: 500,
+                        textTransform: 'capitalize'
+                      }}
+                    >
+                      {f.replace('-', ' ')}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <button className="btn-create-bill" onClick={() => openBillForm()}>+ New Bill</button>
+              <button className="btn-create-bill" style={{ flexShrink: 0 }} onClick={() => openBillForm()}>+ New Bill</button>
             </div>
             {(() => {
               const baseBills = showAllBills
@@ -1439,7 +1440,7 @@ const RepairAdminPanel = ({ onLogout }) => {
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
                 <h2 className="section-title" style={{ margin: 0 }}>Financial Dashboard</h2>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                <div className="earnings-filter-row" style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                   {['today', 'week', 'month', 'custom'].map(f => (
                     <button
                       key={f}

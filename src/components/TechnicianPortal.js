@@ -12,6 +12,38 @@ const IS = {
   fontFamily: 'inherit'
 };
 
+// Inject mobile styles once
+const MOBILE_CSS = `
+  @media (max-width: 600px) {
+    .tp-stat-grid { grid-template-columns: 1fr 1fr !important; }
+    .tp-tally-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .tp-tally-table { min-width: 480px; }
+    .tp-fin-row { flex-direction: column !important; gap: 10px !important; }
+    .tp-fin-divider { display: none !important; }
+    .tp-fin-stat { text-align: left !important; flex-direction: row !important; justify-content: space-between; align-items: center; }
+    .tp-header-name { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .tp-tab-bar { gap: 2px !important; }
+    .tp-tab-btn { padding: 7px 6px !important; font-size: 11px !important; }
+    .tp-pending-actions { flex-direction: column !important; gap: 8px !important; }
+    .tp-pending-actions button { width: 100%; }
+    .tp-completed-header { flex-direction: column !important; align-items: flex-start !important; gap: 6px !important; }
+    .tp-transfer-row { flex-direction: column !important; gap: 8px !important; }
+    .tp-transfer-row button { width: 100% !important; }
+    .tp-breakdown-grid { grid-template-columns: 1fr !important; }
+  }
+  @media (max-width: 380px) {
+    .tp-stat-grid { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+  }
+`;
+let _tpStyleInjected = false;
+function injectTpStyles() {
+  if (_tpStyleInjected) return;
+  _tpStyleInjected = true;
+  const el = document.createElement('style');
+  el.textContent = MOBILE_CSS;
+  document.head.appendChild(el);
+}
+
 const StatusBadge = ({ status }) => {
   const map = {
     'in-progress': { bg: 'rgba(251,191,36,0.15)', color: '#fbbf24', label: 'In Progress' },
@@ -28,11 +60,11 @@ const StatusBadge = ({ status }) => {
 };
 
 const StatCard = ({ icon, label, value, sub, color = '#fff', accent = '#1a1a1a' }) => (
-  <div style={{ background: accent, border: '1px solid #222', borderRadius: 14, padding: '18px 20px', flex: 1, minWidth: 140 }}>
-    <div style={{ fontSize: 22, marginBottom: 6 }}>{icon}</div>
-    <div style={{ fontSize: 11, color: '#666', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>{label}</div>
-    <div style={{ fontSize: 26, fontWeight: 800, color, lineHeight: 1.1 }}>{value}</div>
-    {sub && <div style={{ fontSize: 12, color: '#555', marginTop: 4 }}>{sub}</div>}
+  <div style={{ background: accent, border: '1px solid #222', borderRadius: 14, padding: '16px 14px', flex: 1, minWidth: 0 }}>
+    <div style={{ fontSize: 20, marginBottom: 6 }}>{icon}</div>
+    <div style={{ fontSize: 10, color: '#666', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>{label}</div>
+    <div style={{ fontSize: 22, fontWeight: 800, color, lineHeight: 1.1 }}>{value}</div>
+    {sub && <div style={{ fontSize: 11, color: '#555', marginTop: 4, lineHeight: 1.3 }}>{sub}</div>}
   </div>
 );
 
@@ -67,7 +99,7 @@ const BillCard = ({ bill }) => {
 
     {/* Financial row */}
     {!isDeleted && (
-      <div style={{ background: '#111', border: '1px solid #222', borderRadius: 10, padding: '12px 14px', display: 'flex', gap: 0, justifyContent: 'space-between' }}>
+      <div className="tp-fin-row" style={{ background: '#111', border: '1px solid #222', borderRadius: 10, padding: '12px 14px', display: 'flex', gap: 0, justifyContent: 'space-between' }}>
         <FinStat label="Bill Charged" value={fmt(bill.finalCharge)} color="#e5e7eb" />
         <Divider />
         <FinStat 
@@ -119,6 +151,7 @@ const TABS = [
 ];
 
 const TechnicianPortal = () => {
+  useEffect(() => { injectTpStyles(); }, []);
   const [techList, setTechList]         = useState([]);
   const [selectedTech, setSelectedTech] = useState('');
   const [pin, setPin]                   = useState('');
@@ -331,38 +364,38 @@ const TechnicianPortal = () => {
   return (
     <div style={{ minHeight: '100vh', background: '#050505', color: '#fff', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif" }}>
       {/* Header */}
-      <div style={{ background: '#0a0a0a', borderBottom: '1px solid #1a1a1a', padding: '0 20px', position: 'sticky', top: 0, zIndex: 100 }}>
-        <div style={{ maxWidth: 900, margin: '0 auto', height: 56, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 20 }}>🔧</span>
-            <span style={{ fontWeight: 700, fontSize: 15 }}>{currentUser.name}</span>
-            <span style={{ fontSize: 12, color: '#444', background: '#111', border: '1px solid #222', borderRadius: 6, padding: '2px 8px' }}>Technician</span>
+      <div style={{ background: '#0a0a0a', borderBottom: '1px solid #1a1a1a', padding: '0 16px', position: 'sticky', top: 0, zIndex: 100 }}>
+        <div style={{ maxWidth: 900, margin: '0 auto', height: 52, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, flex: 1 }}>
+            <span style={{ fontSize: 18, flexShrink: 0 }}>🔧</span>
+            <span className="tp-header-name" style={{ fontWeight: 700, fontSize: 14 }}>{currentUser.name}</span>
+            <span style={{ fontSize: 11, color: '#444', background: '#111', border: '1px solid #222', borderRadius: 6, padding: '2px 7px', flexShrink: 0 }}>Tech</span>
           </div>
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            <button onClick={fetchDashboardData} style={{ background: '#111', border: '1px solid #222', color: '#aaa', padding: '6px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 13 }}>
-              ↻ Refresh
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
+            <button onClick={fetchDashboardData} style={{ background: '#111', border: '1px solid #222', color: '#aaa', padding: '6px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 12 }}>
+              ↻
             </button>
-            <button onClick={handleLogout} style={{ background: 'transparent', border: '1px solid #222', color: '#666', padding: '6px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 13 }}>
-              Logout
+            <button onClick={handleLogout} style={{ background: 'transparent', border: '1px solid #222', color: '#666', padding: '6px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 12 }}>
+              Out
             </button>
           </div>
         </div>
       </div>
 
-      <div style={{ maxWidth: 900, margin: '0 auto', padding: '24px 16px 60px' }}>
+      <div style={{ maxWidth: 900, margin: '0 auto', padding: '16px 12px 80px' }}>
 
         {/* Stats Row */}
-        <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
-          <StatCard icon="💰" label="Net Earned" value={fmt(stats.netEarned)} sub="Total from completed jobs" color={stats.netEarned < 0 ? "#f87171" : "#10b981"} accent={stats.netEarned < 0 ? "#1a0a0a" : "#0a1a0f"} />
-          <StatCard icon="✅" label="Jobs Done" value={stats.completed.length} sub={`₹${stats.totalBillCharged.toFixed(0)} billed total`} color="#60a5fa" accent="#0a0f1a" />
-          <StatCard icon="🔧" label="Active Jobs" value={stats.active.length} sub="Phones with you now" color="#fbbf24" accent="#1a1500" />
-          <StatCard icon="💸" label="Refunded" value={stats.refunded.length} sub="Returned to customer" color="#f87171" accent="#1a0a0a" />
+        <div className="tp-stat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 20 }}>
+          <StatCard icon="💰" label="Net Earned" value={fmt(stats.netEarned)} sub="Completed" color={stats.netEarned < 0 ? "#f87171" : "#10b981"} accent={stats.netEarned < 0 ? "#1a0a0a" : "#0a1a0f"} />
+          <StatCard icon="✅" label="Jobs Done" value={stats.completed.length} sub={`₹${stats.totalBillCharged.toFixed(0)} billed`} color="#60a5fa" accent="#0a0f1a" />
+          <StatCard icon="🔧" label="Active" value={stats.active.length} sub="With you" color="#fbbf24" accent="#1a1500" />
+          <StatCard icon="💸" label="Refunded" value={stats.refunded.length} sub="Returned" color="#f87171" accent="#1a0a0a" />
         </div>
 
         {/* Tabs */}
-        <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: '#0d0d0d', padding: 4, borderRadius: 12, border: '1px solid #1a1a1a', overflowX: 'auto' }}>
+        <div className="tp-tab-bar" style={{ display: 'flex', gap: 4, marginBottom: 20, background: '#0d0d0d', padding: 4, borderRadius: 12, border: '1px solid #1a1a1a', overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
           {TABS.map(tab => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
+            <button className="tp-tab-btn" key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
               flex: 1, padding: '9px 8px', background: activeTab === tab.id ? '#fff' : 'transparent',
               color: activeTab === tab.id ? '#000' : '#555', border: 'none', borderRadius: 8,
               fontWeight: 700, fontSize: 12, cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap',
@@ -391,51 +424,53 @@ const TechnicianPortal = () => {
                 <h2 style={{ fontSize: 18, marginBottom: 20, color: '#fff' }}>📊 Your Earnings Tally</h2>
 
                 {/* Tally Table */}
-                <div style={{ background: '#0a0a0a', border: '1px solid #1e1e1e', borderRadius: 14, overflow: 'hidden', marginBottom: 24 }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 0, background: '#111', padding: '10px 16px', borderBottom: '1px solid #1e1e1e' }}>
-                    {['Device / Customer', 'Bill Charged', 'My Commission', 'Status'].map(h => (
-                      <div key={h} style={{ fontSize: 10, color: '#555', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8 }}>{h}</div>
-                    ))}
-                  </div>
+                <div className="tp-tally-wrap" style={{ background: '#0a0a0a', border: '1px solid #1e1e1e', borderRadius: 14, overflow: 'hidden', marginBottom: 24 }}>
+                  <div className="tp-tally-table" style={{ minWidth: 0 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 0, background: '#111', padding: '10px 16px', borderBottom: '1px solid #1e1e1e' }}>
+                      {['Device / Customer', 'Charged', 'Commission', 'Status'].map(h => (
+                        <div key={h} style={{ fontSize: 10, color: '#555', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8 }}>{h}</div>
+                      ))}
+                    </div>
 
-                  {bills.filter(b => b.status !== 'deleted').length === 0 ? (
-                    <div style={{ padding: 40, textAlign: 'center', color: '#444' }}>No bills yet</div>
-                  ) : (
-                    bills
-                      .filter(b => b.status !== 'deleted')
-                      .map((bill, i) => (
-                        <div key={bill.id} style={{
-                          display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr',
-                          gap: 0, padding: '12px 16px',
-                          borderBottom: '1px solid #111',
-                          background: i % 2 === 0 ? 'transparent' : '#080808'
-                        }}>
-                          <div>
-                            <div style={{ fontSize: 13, fontWeight: 600, color: '#e5e7eb' }}>{bill.deviceModel}</div>
-                            <div style={{ fontSize: 11, color: '#444', marginTop: 1 }}>{bill.customerName} • {fmtDate(bill.createdAt)}</div>
+                    {bills.filter(b => b.status !== 'deleted').length === 0 ? (
+                      <div style={{ padding: 40, textAlign: 'center', color: '#444' }}>No bills yet</div>
+                    ) : (
+                      bills
+                        .filter(b => b.status !== 'deleted')
+                        .map((bill, i) => (
+                          <div key={bill.id} style={{
+                            display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr',
+                            gap: 0, padding: '12px 16px',
+                            borderBottom: '1px solid #111',
+                            background: i % 2 === 0 ? 'transparent' : '#080808'
+                          }}>
+                            <div>
+                              <div style={{ fontSize: 13, fontWeight: 600, color: '#e5e7eb' }}>{bill.deviceModel}</div>
+                              <div style={{ fontSize: 11, color: '#444', marginTop: 1 }}>{bill.customerName} • {fmtDate(bill.createdAt)}</div>
+                            </div>
+                            <div style={{ fontSize: 13, fontWeight: 600, color: '#e5e7eb', alignSelf: 'center' }}>{fmt(bill.finalCharge)}</div>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: (bill.status === 'refunded' || bill.commission < 0) ? '#f87171' : '#10b981', alignSelf: 'center' }}>
+                              {bill.status === 'refunded' ? `-${fmt(Math.abs(bill.commission))}` : fmt(bill.commission)}
+                            </div>
+                            <div style={{ alignSelf: 'center' }}>
+                              <StatusBadge status={bill.status} />
+                            </div>
                           </div>
-                          <div style={{ fontSize: 13, fontWeight: 600, color: '#e5e7eb', alignSelf: 'center' }}>{fmt(bill.finalCharge)}</div>
-                          <div style={{ fontSize: 13, fontWeight: 700, color: (bill.status === 'refunded' || bill.commission < 0) ? '#f87171' : '#10b981', alignSelf: 'center' }}>
-                            {bill.status === 'refunded' ? `-${fmt(Math.abs(bill.commission))}` : fmt(bill.commission)}
-                          </div>
-                          <div style={{ alignSelf: 'center' }}>
-                            <StatusBadge status={bill.status} />
-                          </div>
-                        </div>
-                      ))
-                  )}
+                        ))
+                    )}
 
-                  {/* Totals footer */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', padding: '14px 16px', background: '#111', borderTop: '2px solid #222' }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>TOTAL ({bills.filter(b => b.status !== 'deleted').length} bills)</div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#60a5fa' }}>{fmt(bills.filter(b => b.status !== 'deleted').reduce((s, b) => s + (+b.finalCharge || 0), 0))}</div>
-                    <div style={{ fontSize: 14, fontWeight: 800, color: stats.netEarned < 0 ? '#f87171' : '#10b981' }}>{fmt(stats.netEarned)}</div>
-                    <div style={{ fontSize: 11, color: '#555' }}>Net earned</div>
+                    {/* Totals footer */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', padding: '14px 16px', background: '#111', borderTop: '2px solid #222' }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>TOTAL ({bills.filter(b => b.status !== 'deleted').length})</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: '#60a5fa' }}>{fmt(bills.filter(b => b.status !== 'deleted').reduce((s, b) => s + (+b.finalCharge || 0), 0))}</div>
+                      <div style={{ fontSize: 14, fontWeight: 800, color: stats.netEarned < 0 ? '#f87171' : '#10b981' }}>{fmt(stats.netEarned)}</div>
+                      <div style={{ fontSize: 11, color: '#555' }}>Net</div>
+                    </div>
                   </div>
                 </div>
 
                 {/* Breakdown cards */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div className="tp-breakdown-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                   <div style={{ background: '#0a1a0f', border: '1px solid #14532d', borderRadius: 12, padding: 18 }}>
                     <div style={{ fontSize: 11, color: '#16a34a', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>💚 Earned (Completed)</div>
                     <div style={{ fontSize: 28, fontWeight: 800, color: '#10b981' }}>{fmt(stats.totalCommission)}</div>
@@ -460,12 +495,12 @@ const TechnicianPortal = () => {
                       {stats.pendingIn.map(bill => (
                         <div key={bill.id} style={{ border: '2px solid #b45309', borderRadius: 16, padding: 4, background: '#451a03' }}>
                           <BillCard bill={bill} />
-                          <div style={{ display: 'flex', gap: 8, padding: '12px 12px 8px' }}>
-                            <div style={{ flex: 1, fontSize: 13, color: '#fbbf24', alignSelf: 'center' }}>
+                          <div className="tp-pending-actions" style={{ display: 'flex', gap: 8, padding: '12px 12px 8px', flexWrap: 'wrap' }}>
+                            <div style={{ flex: 1, minWidth: 160, fontSize: 13, color: '#fbbf24', alignSelf: 'center' }}>
                               ⚠️ <b>{bill.pendingCustody?.transferredBy}</b> sent this to you.
                             </div>
-                            <button onClick={() => handlePending(bill.id, true)} style={{ background: '#10b981', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }}>Accept</button>
-                            <button onClick={() => handlePending(bill.id, false)} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }}>Reject</button>
+                            <button onClick={() => handlePending(bill.id, true)} style={{ background: '#10b981', color: '#fff', border: 'none', padding: '10px 16px', borderRadius: 8, fontWeight: 700, cursor: 'pointer', flex: 1, minWidth: 80 }}>Accept</button>
+                            <button onClick={() => handlePending(bill.id, false)} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '10px 16px', borderRadius: 8, fontWeight: 700, cursor: 'pointer', flex: 1, minWidth: 80 }}>Reject</button>
                           </div>
                         </div>
                       ))}
@@ -481,17 +516,17 @@ const TechnicianPortal = () => {
                     {stats.active.map(bill => (
                       <div key={bill.id}>
                         <BillCard bill={bill} />
-                        <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
+                        <div className="tp-transfer-row" style={{ marginTop: 8, display: 'flex', gap: 8 }}>
                           <select 
                             style={{ ...IS, flex: 1, padding: '12px', fontSize: 14 }}
                             value={transferTargets[bill.id] || ''}
                             onChange={e => setTransferTargets(prev => ({ ...prev, [bill.id]: e.target.value }))}
                           >
-                            <option value="">-- Select to Transfer Custody --</option>
+                            <option value="">-- Transfer Custody --</option>
                             <option value="Store Front Desk">Return to Store Front Desk</option>
                             <optgroup label="Technicians">
                               {techList.filter(t => t.name !== currentUser?.name).map(t => (
-                                <option key={t._id} value={t.name}>Transfer to {t.name}</option>
+                                <option key={t._id} value={t.name}>To {t.name}</option>
                               ))}
                             </optgroup>
                           </select>
@@ -499,9 +534,10 @@ const TechnicianPortal = () => {
                             disabled={!transferTargets[bill.id]}
                             onClick={() => handleTransfer(bill.id, transferTargets[bill.id])}
                             style={{ 
-                              padding: '0 20px', background: transferTargets[bill.id] ? '#2563eb' : '#333', 
+                              padding: '12px 20px', background: transferTargets[bill.id] ? '#2563eb' : '#333', 
                               color: transferTargets[bill.id] ? '#fff' : '#888', border: 'none', 
-                              borderRadius: 10, fontWeight: 700, cursor: transferTargets[bill.id] ? 'pointer' : 'not-allowed' 
+                              borderRadius: 10, fontWeight: 700, cursor: transferTargets[bill.id] ? 'pointer' : 'not-allowed',
+                              whiteSpace: 'nowrap'
                             }}
                           >
                             Send
@@ -534,9 +570,9 @@ const TechnicianPortal = () => {
             {/* ── COMPLETED TAB ── */}
             {activeTab === 'completed' && (
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                <div className="tp-completed-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 8 }}>
                   <h2 style={{ fontSize: 18, margin: 0, color: '#fff' }}>✅ Completed Jobs ({stats.completed.length})</h2>
-                  <span style={{ fontSize: 14, color: '#10b981', fontWeight: 700 }}>Total commission: {fmt(stats.totalCommission)}</span>
+                  <span style={{ fontSize: 14, color: '#10b981', fontWeight: 700 }}>Commission: {fmt(stats.totalCommission)}</span>
                 </div>
                 {stats.completed.length === 0 ? (
                   <EmptyState icon="📋" msg="No completed jobs yet" />
@@ -551,7 +587,7 @@ const TechnicianPortal = () => {
             {/* ── REFUNDED TAB ── */}
             {activeTab === 'refunded' && (
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                <div className="tp-completed-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 8 }}>
                   <h2 style={{ fontSize: 18, margin: 0, color: '#fff' }}>💸 Refunded Bills ({stats.refunded.length})</h2>
                   <span style={{ fontSize: 14, color: '#f87171', fontWeight: 700 }}>Returned to customer</span>
                 </div>

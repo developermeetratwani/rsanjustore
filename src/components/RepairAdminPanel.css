@@ -460,6 +460,28 @@
   padding-bottom: 30px;
 }
 
+/* ---- Bill Form 2-col grid collapses on mobile ---- */
+.bill-form-content .two-col-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 480px) {
+  .bill-form-content .two-col-grid {
+    grid-template-columns: 1fr;
+  }
+  .bill-form-content .two-col-grid > * {
+    grid-column: span 1 !important;
+  }
+  /* Ensure modal inputs are tappable */
+  .bill-form-content input,
+  .bill-form-content select,
+  .bill-form-content textarea {
+    font-size: 16px; /* prevent iOS zoom */
+  }
+}
+
 .btn-cancel,
 .btn-draft,
 .btn-complete {
@@ -596,6 +618,9 @@
   .repairers-grid {
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   }
+
+  /* Hide DB sync text on tablet, keep icon */
+  .db-status-text { display: none; }
 }
 
 /* ---- Mobile (600px and below) ---- */
@@ -609,43 +634,47 @@
   }
 
   .repair-header-content {
-    padding: 0 14px;
+    padding: 0 12px;
     height: 52px;
+    gap: 8px;
   }
 
-  .repair-logo h1 { font-size: 14px; }
-  .repair-icon { font-size: 18px; }
+  .repair-logo h1 { font-size: 13px; }
+  .repair-icon { font-size: 17px; }
 
+  /* Hide CSV download and DB sync status on mobile */
   .btn-download-csv { display: none; }
+  .header-db-status { display: none; }
+  .header-sync-btn span { display: none; } /* hide sync text, keep icon */
 
   .repair-admin-container {
-    padding: 14px 12px 80px;
+    padding: 12px 10px 80px;
   }
 
   .repair-stats {
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
   }
 
   .stat-card {
-    padding: 12px 10px;
+    padding: 10px 8px;
     flex-direction: column;
     align-items: flex-start;
     gap: 4px;
     border-radius: 10px;
   }
 
-  .stat-info h3 { font-size: 17px; }
+  .stat-info h3 { font-size: 16px; }
   .stat-info p { font-size: 10px; }
-  .stat-icon { font-size: 16px; }
+  .stat-icon { font-size: 15px; }
 
   .repair-tabs {
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     border-radius: 9px;
   }
 
-  .repair-tab-btn { padding: 6px 11px; font-size: 12px; }
+  .repair-tab-btn { padding: 6px 9px; font-size: 11.5px; }
 
   .bills-grid,
   .repairers-grid {
@@ -655,14 +684,34 @@
 
   .bill-card, .repairer-card { border-radius: 10px; padding: 14px; }
 
+  /* Bills section header: stack vertically */
+  .bills-section-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+
+  /* Filter pills row: allow wrapping */
+  .bills-filter-row {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    overflow-x: visible !important;
+  }
+
+  .btn-create-bill {
+    width: 100%;
+    text-align: center;
+  }
+
   .form-buttons { flex-direction: column; }
 
-  .search-box { gap: 6px; }
-  .search-box button { padding: 10px 12px; }
+  .search-box { gap: 6px; flex-wrap: wrap; }
+  .search-box input { min-width: 0; }
+  .search-box button { width: 100%; padding: 10px 12px; }
 
   .parts-input { flex-direction: column; gap: 6px; }
 
-  .bill-actions { gap: 5px; }
+  .bill-actions { gap: 5px; flex-wrap: wrap; }
 
   .btn-mark-complete,
   .btn-resend-review,
@@ -671,12 +720,19 @@
     padding: 7px 8px;
     font-size: 11px;
   }
+
+  /* Earnings tab: filter buttons wrap */
+  .earnings-filter-row {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
 }
 
 /* ---- Very small (360px) ---- */
 @media (max-width: 380px) {
   .repair-stats { grid-template-columns: repeat(3, 1fr); gap: 6px; }
-  .stat-card { padding: 10px 8px; }
-  .stat-info h3 { font-size: 15px; }
+  .stat-card { padding: 9px 7px; }
+  .stat-info h3 { font-size: 14px; }
   .bill-actions { flex-direction: column; }
+  .repair-tab-btn { padding: 5px 7px; font-size: 11px; }
 }
