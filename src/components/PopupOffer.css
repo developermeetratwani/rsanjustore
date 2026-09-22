@@ -1,0 +1,190 @@
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+}
+
+.popup-content {
+  max-width: 500px;
+  width: 100%;
+  padding: 40px 30px;
+  position: relative;
+  text-align: center;
+  border: 2px solid rgba(0, 212, 255, 0.5);
+  box-shadow: 0 0 50px rgba(0, 212, 255, 0.5);
+}
+
+.popup-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  background: rgba(255, 0, 0, 0.2);
+  border: 2px solid rgba(255, 0, 0, 0.5);
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.popup-close:hover {
+  background: rgba(255, 0, 0, 0.4);
+  border-color: #ff0000;
+}
+
+.popup-icon {
+  font-size: 80px;
+  margin-bottom: 20px;
+  filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.6));
+}
+
+.popup-title {
+  font-size: 42px;
+  font-weight: 900;
+  margin-bottom: 15px;
+  letter-spacing: 2px;
+}
+
+.popup-subtitle {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 30px;
+}
+
+.popup-offer-box {
+  background: rgba(0, 212, 255, 0.1);
+  border: 2px solid rgba(0, 212, 255, 0.3);
+  border-radius: 15px;
+  padding: 30px 20px;
+  margin-bottom: 30px;
+  position: relative;
+}
+
+.offer-badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #ff4757, #ff6348);
+  padding: 5px 20px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  box-shadow: 0 0 20px rgba(255, 71, 87, 0.6);
+}
+
+.offer-text {
+  margin-bottom: 15px;
+}
+
+.offer-discount {
+  display: block;
+  font-size: 48px;
+  font-weight: 900;
+  background: linear-gradient(90deg, #00d4ff, #7b2ff7, #ff00ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 10px;
+}
+
+.offer-detail {
+  display: block;
+  font-size: 20px;
+  color: #fff;
+  font-weight: 600;
+}
+
+.offer-validity {
+  font-size: 14px;
+  color: #ff00ff;
+  font-weight: bold;
+}
+
+.popup-features {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 30px;
+  text-align: left;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.feature-icon {
+  width: 25px;
+  height: 25px;
+  background: linear-gradient(135deg, #00d4ff, #7b2ff7);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.popup-cta {
+  width: 100%;
+  padding: 18px;
+  background: linear-gradient(135deg, #00d4ff, #7b2ff7);
+  border: none;
+  border-radius: 50px;
+  color: #fff;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+  margin-bottom: 20px;
+}
+
+.popup-cta:hover {
+  box-shadow: 0 0 50px rgba(0, 212, 255, 0.8);
+}
+
+.popup-timer {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  .popup-content {
+    padding: 30px 20px;
+  }
+
+  .popup-title {
+    font-size: 32px;
+  }
+
+  .popup-icon {
+    font-size: 60px;
+  }
+
+  .offer-discount {
+    font-size: 36px;
+  }
+
+  .offer-detail {
+    font-size: 18px;
+  }
+}

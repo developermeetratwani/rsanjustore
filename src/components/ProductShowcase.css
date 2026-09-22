@@ -1,0 +1,248 @@
+.product-showcase {
+  padding: 100px 20px;
+  position: relative;
+  background: #000;
+  overflow: hidden;
+}
+
+.showcase-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.1;
+}
+
+.grid-lines {
+  width: 100%;
+  height: 100%;
+  background-image: 
+    linear-gradient(rgba(0, 212, 255, 0.3) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 212, 255, 0.3) 1px, transparent 1px);
+  background-size: 50px 50px;
+  animation: gridMove 20s linear infinite;
+}
+
+@keyframes gridMove {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(50px, 50px); }
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 40px;
+  margin-bottom: 80px;
+  perspective: 1000px;
+}
+
+.product-card-3d {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+.product-inner {
+  padding: 40px 30px;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.product-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.3;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.product-emoji {
+  font-size: 80px;
+  margin-bottom: 20px;
+  display: inline-block;
+  filter: drop-shadow(0 10px 30px rgba(255, 107, 53, 0.5));
+  position: relative;
+  z-index: 1;
+}
+
+.product-image-slider {
+  width: 100%;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.product-main-image {
+  width: 100%;
+  height: 200px;
+  object-fit: contain;
+  border-radius: 12px;
+  filter: drop-shadow(0 10px 30px rgba(255, 107, 53, 0.3));
+}
+
+.product-image-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.product-image-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.product-image-dots span.active {
+  background: #FF6B35;
+  width: 24px;
+  border-radius: 4px;
+}
+
+.product-reflection {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to top, rgba(255, 255, 255, 0.05), transparent);
+  pointer-events: none;
+  border-radius: 0 0 20px 20px;
+}
+
+.product-name {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #fff;
+  position: relative;
+  z-index: 1;
+}
+
+.product-price {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.product-btn {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 50px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+}
+
+.product-btn:hover {
+  box-shadow: 0 0 40px rgba(0, 212, 255, 0.8);
+}
+
+.product-specs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  position: relative;
+  z-index: 1;
+}
+
+.product-specs span {
+  display: flex;
+  align-items: center;
+}
+
+.fold-animation-demo {
+  text-align: center;
+  padding: 60px 20px;
+  background: rgba(0, 212, 255, 0.05);
+  border-radius: 30px;
+  border: 2px solid rgba(0, 212, 255, 0.2);
+}
+
+.demo-title {
+  font-size: 36px;
+  font-weight: bold;
+  margin-bottom: 40px;
+}
+
+.fold-phone-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 30px;
+  perspective: 1500px;
+  transform-style: preserve-3d;
+}
+
+.fold-phone-left,
+.fold-phone-right {
+  width: 150px;
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-style: preserve-3d;
+  transform-origin: right center;
+  border: 3px solid rgba(0, 212, 255, 0.5);
+}
+
+.fold-phone-right {
+  transform-origin: left center;
+}
+
+.phone-screen {
+  font-size: 60px;
+  filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.8));
+}
+
+.demo-subtitle {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+@media (max-width: 768px) {
+  .products-grid {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .product-emoji {
+    font-size: 60px;
+  }
+
+  .demo-title {
+    font-size: 28px;
+  }
+
+  .fold-phone-left,
+  .fold-phone-right {
+    width: 100px;
+    height: 200px;
+  }
+
+  .phone-screen {
+    font-size: 40px;
+  }
+}

@@ -1,0 +1,681 @@
+/* ====================================================
+   R Sanju Repair Admin — Minimalist Design System
+   Clean, fast, mobile-first, zero clutter
+   ==================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ---- Reset & Base ---- */
+*, *::before, *::after { box-sizing: border-box; }
+
+.repair-admin-panel {
+  min-height: 100vh;
+  background: #f5f5f4;
+  color: #1c1c1e;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- Header ---- */
+.repair-admin-header {
+  background: #fff;
+  border-bottom: 1px solid #e5e5e5;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+}
+
+.repair-header-content {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 20px;
+  height: 56px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.repair-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.repair-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.repair-logo h1 {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+  color: #1c1c1e;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+}
+
+.repair-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.btn-download-csv,
+.btn-logout {
+  padding: 6px 14px;
+  border: 1px solid #e0e0e0;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  background: #fff;
+  color: #444;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.btn-download-csv:hover { background: #f5f5f4; border-color: #ccc; }
+.btn-logout { border-color: transparent; color: #888; }
+.btn-logout:hover { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
+
+/* ---- Container ---- */
+.repair-admin-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 20px 16px 60px;
+}
+
+/* ---- Stats Row ---- */
+.repair-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stat-icon {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.stat-info h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+  color: #1c1c1e;
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+}
+
+.stat-info p {
+  margin: 2px 0 0;
+  color: #8e8e93;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* ---- Tabs ---- */
+.repair-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  background: #ebebeb;
+  padding: 4px;
+  border-radius: 10px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.repair-tabs::-webkit-scrollbar { display: none; }
+
+.repair-tab-btn {
+  padding: 7px 14px;
+  background: transparent;
+  border: none;
+  border-radius: 7px;
+  color: #636366;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.repair-tab-btn.active {
+  background: #fff;
+  color: #1c1c1e;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.repair-tab-btn:hover:not(.active) { color: #1c1c1e; }
+
+/* ---- Section Title ---- */
+.section-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+  color: #1c1c1e;
+  letter-spacing: -0.2px;
+}
+
+/* ---- Cards Grid ---- */
+.bills-grid,
+.repairers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+/* ---- Bill Card ---- */
+.bill-card {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  transition: box-shadow 0.15s;
+}
+
+.bill-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
+
+.bill-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.bill-id {
+  font-size: 11px;
+  font-weight: 600;
+  color: #8e8e93;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  letter-spacing: 0.5px;
+}
+
+.bill-status,
+.apt-status,
+.repairer-type {
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.status-in-progress { background: #fff7ed; color: #c2410c; }
+.status-completed { background: #f0fdf4; color: #15803d; }
+.status-refunded { background: #fef2f2; color: #b91c1c; }
+.status-pending { background: #f5f5f4; color: #78716c; }
+.status-draft { background: #f5f5f4; color: #a8a29e; }
+.type-commission { background: #eff6ff; color: #2563eb; }
+.type-salaried { background: #faf5ff; color: #7c3aed; }
+
+.bill-customer,
+.repairer-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1c1c1e;
+  margin: 0 0 6px;
+}
+
+/* ---- Repairer Card ---- */
+.repairer-card {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.repairer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.repairer-actions {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+/* ---- Bill Actions ---- */
+.bill-actions {
+  margin-top: 12px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.mobile-actions-btn {
+  display: none !important;
+}
+
+.btn-mark-complete,
+.btn-resend-review,
+.btn-edit-repairer,
+.btn-delete-repairer {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid #e5e5e5;
+  background: #f5f5f4;
+  border-radius: 8px;
+  color: #374151;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.btn-mark-complete:hover { background: #1c1c1e; color: #fff; border-color: #1c1c1e; }
+.btn-resend-review:hover { background: #059669; color: #fff; border-color: #059669; }
+.btn-edit-repairer:hover { background: #1c1c1e; color: #fff; border-color: #1c1c1e; }
+.btn-delete-repairer:hover { background: #dc2626; color: #fff; border-color: #dc2626; }
+
+/* ---- Create Bill Button ---- */
+.btn-create-bill {
+  padding: 8px 16px;
+  background: #1c1c1e;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.btn-create-bill:hover { background: #333; }
+
+.btn-new-repairer {
+  padding: 8px 16px;
+  background: #1c1c1e;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-new-repairer:hover { background: #333; }
+
+/* ---- Empty State ---- */
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+}
+
+.empty-icon { font-size: 36px; margin-bottom: 12px; }
+
+.empty-state h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 6px;
+  color: #1c1c1e;
+}
+
+.empty-state p { color: #8e8e93; font-size: 13px; margin: 0; }
+
+/* ---- Modals ---- */
+.bill-form-overlay,
+.repairer-form-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 1000;
+  padding: 0;
+}
+
+@media (min-width: 600px) {
+  .bill-form-overlay,
+  .repairer-form-overlay {
+    align-items: center;
+    padding: 20px;
+  }
+}
+
+.bill-form,
+.repairer-form {
+  background: #fff;
+  border-radius: 16px 16px 0 0;
+  padding: 24px 20px;
+  width: 100%;
+  max-height: 92vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (min-width: 600px) {
+  .bill-form,
+  .repairer-form {
+    border-radius: 16px;
+    max-width: 520px;
+    padding: 28px 24px;
+  }
+}
+
+.form-title {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0 0 20px;
+  color: #1c1c1e;
+  text-align: left;
+}
+
+.bill-form-content .form-group,
+.repairer-form-content .form-group {
+  margin-bottom: 14px;
+}
+
+.bill-form-content label,
+.repairer-form-content label {
+  display: block;
+  color: #636366;
+  font-weight: 500;
+  margin-bottom: 5px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.bill-form-content input,
+.bill-form-content select,
+.bill-form-content textarea,
+.repairer-form-content input,
+.repairer-form-content select {
+  width: 100%;
+  padding: 10px 12px;
+  background: #f5f5f4;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #1c1c1e;
+  font-size: 14px;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: border-color 0.15s, background 0.15s;
+  -webkit-appearance: none;
+}
+
+.bill-form-content input:focus,
+.bill-form-content select:focus,
+.bill-form-content textarea:focus,
+.repairer-form-content input:focus,
+.repairer-form-content select:focus {
+  outline: none;
+  border-color: #1c1c1e;
+  background: #fff;
+}
+
+.bill-form-content select,
+.repairer-form-content select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+
+/* ---- Form Buttons ---- */
+.form-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.btn-cancel,
+.btn-draft,
+.btn-complete {
+  flex: 1;
+  padding: 11px;
+  border: 1px solid #e0e0e0;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.btn-cancel { background: #f5f5f4; color: #636366; }
+.btn-cancel:hover { background: #ebebeb; }
+
+.btn-draft { background: #f5f5f4; color: #1c1c1e; }
+.btn-draft:hover { background: #1c1c1e; color: #fff; border-color: #1c1c1e; }
+
+.btn-complete { background: #1c1c1e; color: #fff; border-color: #1c1c1e; }
+.btn-complete:hover { background: #333; border-color: #333; }
+
+/* ---- Parts / Expense Input ---- */
+.parts-input {
+  display: flex;
+  gap: 8px;
+}
+
+.parts-input input { flex: 1; }
+
+.parts-input button {
+  padding: 10px 14px;
+  background: #1c1c1e;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.part-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 12px;
+  background: #f5f5f4;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: #374151;
+}
+
+.part-item button {
+  background: none;
+  border: none;
+  color: #dc2626;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.part-item button:hover { background: #fef2f2; }
+
+/* ---- Search Box ---- */
+.search-box {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.search-box input {
+  flex: 1;
+  padding: 10px 14px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 9px;
+  color: #1c1c1e;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.search-box input:focus { outline: none; border-color: #1c1c1e; }
+
+.search-box button {
+  padding: 10px 18px;
+  background: #1c1c1e;
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.search-box button:hover { background: #333; }
+
+/* ---- Card shared ---- */
+.card {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+/* ---- Scrollbar (desktop) ---- */
+@media (min-width: 769px) {
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #d1d1d1; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #aaa; }
+}
+
+/* ============================================================
+   RESPONSIVE BREAKPOINTS
+   ============================================================ */
+
+/* ---- Tablet (768px and below) ---- */
+@media (max-width: 900px) {
+  .repair-stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .bills-grid,
+  .repairers-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
+}
+
+/* ---- Mobile (600px and below) ---- */
+@media (max-width: 600px) {
+  .desktop-actions {
+    display: none !important;
+  }
+  
+  .mobile-actions-btn {
+    display: block !important;
+  }
+
+  .repair-header-content {
+    padding: 0 14px;
+    height: 52px;
+  }
+
+  .repair-logo h1 { font-size: 14px; }
+  .repair-icon { font-size: 18px; }
+
+  .btn-download-csv { display: none; }
+
+  .repair-admin-container {
+    padding: 14px 12px 80px;
+  }
+
+  .repair-stats {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .stat-card {
+    padding: 12px 10px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    border-radius: 10px;
+  }
+
+  .stat-info h3 { font-size: 17px; }
+  .stat-info p { font-size: 10px; }
+  .stat-icon { font-size: 16px; }
+
+  .repair-tabs {
+    margin-bottom: 16px;
+    border-radius: 9px;
+  }
+
+  .repair-tab-btn { padding: 6px 11px; font-size: 12px; }
+
+  .bills-grid,
+  .repairers-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .bill-card, .repairer-card { border-radius: 10px; padding: 14px; }
+
+  .form-buttons { flex-direction: column; }
+
+  .search-box { gap: 6px; }
+  .search-box button { padding: 10px 12px; }
+
+  .parts-input { flex-direction: column; gap: 6px; }
+
+  .bill-actions { gap: 5px; }
+
+  .btn-mark-complete,
+  .btn-resend-review,
+  .btn-edit-repairer,
+  .btn-delete-repairer {
+    padding: 7px 8px;
+    font-size: 11px;
+  }
+}
+
+/* ---- Very small (360px) ---- */
+@media (max-width: 380px) {
+  .repair-stats { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .stat-card { padding: 10px 8px; }
+  .stat-info h3 { font-size: 15px; }
+  .bill-actions { flex-direction: column; }
+}

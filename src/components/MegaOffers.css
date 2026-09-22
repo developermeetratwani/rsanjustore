@@ -1,0 +1,257 @@
+.mega-offers {
+  padding: 100px 20px;
+  position: relative;
+  background: linear-gradient(180deg, #000000, #0a0a1a, #000000);
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.section-title {
+  font-size: 56px;
+  font-weight: 900;
+  margin-bottom: 20px;
+  letter-spacing: 3px;
+}
+
+.title-line {
+  width: 150px;
+  height: 4px;
+  background: linear-gradient(90deg, #00d4ff, #7b2ff7, #ff00ff);
+  margin: 0 auto 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.8);
+}
+
+.section-subtitle {
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.offers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 30px;
+  margin-bottom: 60px;
+}
+
+.offer-card {
+  padding: 40px 30px;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+.offer-card::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, #00d4ff, #7b2ff7, #ff00ff, #00d4ff);
+  border-radius: 20px;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  background-size: 300% 300%;
+  animation: gradientRotate 3s ease infinite;
+}
+
+@keyframes gradientRotate {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.offer-card:hover::before {
+  opacity: 1;
+}
+
+.offer-shine {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.offer-card:hover .offer-shine {
+  left: 100%;
+}
+
+.offer-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+  display: inline-block;
+  filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.6));
+}
+
+.offer-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #fff;
+}
+
+.offer-description {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 20px;
+}
+
+.offer-price {
+  display: inline-block;
+  padding: 15px 30px;
+  border-radius: 50px;
+  font-size: 28px;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 20px;
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+}
+
+.offer-badge {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #ff4757, #ff6348);
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  box-shadow: 0 0 20px rgba(255, 71, 87, 0.6);
+}
+
+.offer-btn {
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(135deg, #00d4ff, #7b2ff7);
+  border: none;
+  border-radius: 50px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+}
+
+.offer-btn:hover {
+  box-shadow: 0 0 40px rgba(0, 212, 255, 0.8);
+  transform: translateY(-2px);
+}
+
+.offer-glow {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  opacity: 0.6;
+  filter: blur(10px);
+}
+
+.limited-time-banner {
+  margin-top: 60px;
+}
+
+.banner-content {
+  padding: 40px;
+  text-align: center;
+  border-radius: 20px;
+}
+
+.banner-content h3 {
+  font-size: 32px;
+  margin-bottom: 15px;
+  background: linear-gradient(90deg, #00d4ff, #7b2ff7, #ff00ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientShift 3s ease infinite;
+  background-size: 200% auto;
+}
+
+.banner-content p {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 30px;
+}
+
+.countdown {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.countdown-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(0, 212, 255, 0.1);
+  padding: 20px 30px;
+  border-radius: 15px;
+  border: 2px solid rgba(0, 212, 255, 0.3);
+  min-width: 100px;
+}
+
+.countdown-value {
+  font-size: 36px;
+  font-weight: bold;
+  background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.countdown-label {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 5px;
+}
+
+.countdown-separator {
+  font-size: 36px;
+  font-weight: bold;
+  color: #00d4ff;
+}
+
+@media (max-width: 768px) {
+  .section-title {
+    font-size: 36px;
+  }
+
+  .offers-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .offer-card {
+    padding: 30px 20px;
+  }
+
+  .banner-content h3 {
+    font-size: 24px;
+  }
+
+  .countdown-item {
+    padding: 15px 20px;
+    min-width: 80px;
+  }
+
+  .countdown-value {
+    font-size: 28px;
+  }
+
+  .countdown-separator {
+    font-size: 28px;
+  }
+}

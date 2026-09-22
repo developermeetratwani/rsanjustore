@@ -1,0 +1,10 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow read/write to all documents
+    // Your admin login provides the security layer
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}

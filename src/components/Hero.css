@@ -1,0 +1,244 @@
+.hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: 100px 20px;
+}
+
+.hero-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.gradient-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.3;
+  animation: float 6s ease-in-out infinite;
+}
+
+.orb-1 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, #00d4ff, transparent);
+  top: -200px;
+  left: -200px;
+}
+
+.orb-2 {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, #7b2ff7, transparent);
+  bottom: -250px;
+  right: -250px;
+  animation-delay: 2s;
+}
+
+.orb-3 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, #ff00ff, transparent);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation-delay: 4s;
+}
+
+.floating-phones {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.floating-phone {
+  position: absolute;
+  font-size: 100px;
+  opacity: 0.2;
+  filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.5));
+}
+
+.floating-phone:nth-child(1) {
+  top: 10%;
+  left: 10%;
+}
+
+.floating-phone:nth-child(2) {
+  top: 60%;
+  right: 15%;
+}
+
+.floating-phone:nth-child(3) {
+  bottom: 15%;
+  left: 20%;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+
+.hero-title {
+  font-size: 80px;
+  font-weight: 900;
+  margin-bottom: 20px;
+  letter-spacing: 5px;
+  line-height: 1.2;
+}
+
+.title-underline {
+  height: 5px;
+  background: linear-gradient(90deg, #00d4ff, #7b2ff7, #ff00ff);
+  margin: 0 auto 30px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.8);
+}
+
+.hero-subtitle {
+  font-size: 32px;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.hero-description {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.7);
+  max-width: 700px;
+  margin: 0 auto 40px;
+  line-height: 1.6;
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 60px;
+}
+
+.btn-secondary {
+  padding: 15px 40px;
+  font-size: 18px;
+  font-weight: bold;
+  border: 2px solid #00d4ff;
+  border-radius: 50px;
+  background: transparent;
+  color: #00d4ff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-secondary:hover {
+  background: #00d4ff;
+  color: #000;
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 0 40px rgba(0, 212, 255, 0.8);
+}
+
+.hero-stats {
+  display: flex;
+  gap: 30px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  padding: 30px 40px;
+  min-width: 180px;
+  transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+}
+
+.stat-item h3 {
+  font-size: 42px;
+  background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.stat-item p {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.scroll-indicator {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+
+.scroll-arrow {
+  font-size: 32px;
+  color: #00d4ff;
+  cursor: pointer;
+  text-shadow: 0 0 10px rgba(0, 212, 255, 0.8);
+}
+
+@media (max-width: 768px) {
+  .hero {
+    padding: 80px 15px;
+  }
+
+  .hero-title {
+    font-size: 42px;
+    letter-spacing: 2px;
+  }
+
+  .hero-subtitle {
+    font-size: 22px;
+  }
+
+  .hero-description {
+    font-size: 16px;
+  }
+
+  .title-underline {
+    width: 200px !important;
+  }
+
+  .floating-phone {
+    font-size: 60px;
+  }
+
+  .hero-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .btn-primary, .btn-secondary {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .stat-item {
+    min-width: 140px;
+    padding: 20px 25px;
+  }
+
+  .stat-item h3 {
+    font-size: 32px;
+  }
+}

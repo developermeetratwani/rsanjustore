@@ -1,0 +1,48 @@
+.special-banner {
+  background: linear-gradient(135deg, #7b2ff7, #00d4ff, #ff00ff);
+  padding: 20px 0;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 0 40px rgba(0, 212, 255, 0.6);
+}
+
+.special-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(255, 255, 255, 0.2) 50%, 
+    transparent 100%);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.banner-track {
+  display: flex;
+  gap: 60px;
+  white-space: nowrap;
+}
+
+.banner-text {
+  font-size: 24px;
+  font-weight: bold;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  display: inline-block;
+  padding: 0 20px;
+}
+
+@media (max-width: 768px) {
+  .banner-text {
+    font-size: 18px;
+  }
+}

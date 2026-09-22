@@ -1,0 +1,95 @@
+.floating-buttons {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  z-index: 1000;
+}
+
+.floating-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.btn-icon {
+  font-size: 28px;
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+}
+
+.btn-tooltip {
+  position: absolute;
+  right: 70px;
+  background: rgba(0, 0, 0, 0.9);
+  color: #fff;
+  padding: 8px 15px;
+  border-radius: 5px;
+  font-size: 14px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  border: 1px solid rgba(0, 212, 255, 0.5);
+}
+
+.floating-btn:hover .btn-tooltip {
+  opacity: 1;
+}
+
+.whatsapp-btn {
+  background: linear-gradient(135deg, #25D366, #128C7E);
+  box-shadow: 0 0 20px rgba(37, 211, 102, 0.5);
+}
+
+.whatsapp-btn:hover {
+  box-shadow: 0 0 30px rgba(37, 211, 102, 0.8);
+}
+
+.call-btn {
+  background: linear-gradient(135deg, #00d4ff, #0080ff);
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+}
+
+.call-btn:hover {
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.8);
+}
+
+.scroll-top-btn {
+  background: linear-gradient(135deg, #7b2ff7, #b24bf3);
+  box-shadow: 0 0 20px rgba(123, 47, 247, 0.5);
+}
+
+.scroll-top-btn:hover {
+  box-shadow: 0 0 30px rgba(123, 47, 247, 0.8);
+}
+
+@media (max-width: 768px) {
+  .floating-buttons {
+    bottom: 20px;
+    right: 20px;
+    gap: 12px;
+  }
+
+  .floating-btn {
+    width: 50px;
+    height: 50px;
+  }
+
+  .btn-icon {
+    font-size: 24px;
+  }
+
+  .btn-tooltip {
+    display: none;
+  }
+}
