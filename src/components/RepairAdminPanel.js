@@ -314,6 +314,16 @@ const RepairAdminPanel = ({ onLogout }) => {
     setNewCustodyHolder('');
   };
 
+  // Keep tracking bill synced with live MongoDB updates from polling
+  useEffect(() => {
+    if (trackingBill && trackingBill !== 'NOT_FOUND') {
+      const updated = bills.find(b => b.id === trackingBill.id);
+      if (updated && JSON.stringify(updated) !== JSON.stringify(trackingBill)) {
+        setTrackingBill(updated);
+      }
+    }
+  }, [bills, trackingBill]);
+
   const handleCustodyTransfer = async () => {
     if (!trackingBill || trackingBill === 'NOT_FOUND' || !newCustodyHolder) return;
     const nowISO = () => new Date().toISOString();
@@ -1526,28 +1536,35 @@ const RepairAdminPanel = ({ onLogout }) => {
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}><span style={{ color: '#6b7280' }}>Status:</span> <strong style={{ color: '#1c1c1e' }}>{trackingBill.status}</strong></div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}><span style={{ color: '#6b7280' }}>Current Holder:</span> <strong style={{ color: '#d97706', fontSize: 16 }}>{trackingBill.custodyHistory?.slice(-1)[0]?.holder || 'Store Front Desk'}</strong></div>
                   
-                  <div style={{ marginTop: 24, padding: 16, border: '1px solid #e5e5e5', borderRadius: 8, background: '#f9fafb' }}>
-                    <h4 style={{ marginBottom: 12 }}>Transfer Custody</h4>
-                    <select 
-                      style={{ ...IS, marginBottom: 12 }} 
-                      value={newCustodyHolder} 
-                      onChange={e => setNewCustodyHolder(e.target.value)}
-                    >
-                      <option value="">-- Select New Holder --</option>
-                      <optgroup label="Locations">
-                        <option value="Store Front Desk">Store Front Desk</option>
-                        <option value="Customer (Delivered)">Customer (Delivered)</option>
-                      </optgroup>
-                      <optgroup label="Technicians">
-                        {repairers.map(r => <option key={r.name} value={r.name}>{r.name}</option>)}
-                      </optgroup>
-                      <optgroup label="Staff">
-                        {staffUsers.map(s => <option key={s.username} value={s.username}>{s.username}</option>)}
-                        <option value="master">Master Admin</option>
-                      </optgroup>
-                    </select>
-                    <button style={BS('#2563eb', '#fff', 'none', '100%')} onClick={handleCustodyTransfer}>Update Custody</button>
-                  </div>
+                  {trackingBill.status === 'deleted' ? (
+                    <div style={{ marginTop: 24, padding: 16, border: '1px solid #fca5a5', borderRadius: 8, background: '#fef2f2', color: '#991b1b' }}>
+                      <h4 style={{ marginBottom: 4 }}>Device Deleted</h4>
+                      <p style={{ fontSize: 14, margin: 0 }}>This bill was deleted. Tracking and custody transfers are disabled.</p>
+                    </div>
+                  ) : (
+                    <div style={{ marginTop: 24, padding: 16, border: '1px solid #e5e5e5', borderRadius: 8, background: '#f9fafb' }}>
+                      <h4 style={{ marginBottom: 12 }}>Transfer Custody</h4>
+                      <select 
+                        style={{ ...IS, marginBottom: 12 }} 
+                        value={newCustodyHolder} 
+                        onChange={e => setNewCustodyHolder(e.target.value)}
+                      >
+                        <option value="">-- Select New Holder --</option>
+                        <optgroup label="Locations">
+                          <option value="Store Front Desk">Store Front Desk</option>
+                          <option value="Customer (Delivered)">Customer (Delivered)</option>
+                        </optgroup>
+                        <optgroup label="Technicians">
+                          {repairers.map(r => <option key={r.name} value={r.name}>{r.name}</option>)}
+                        </optgroup>
+                        <optgroup label="Staff">
+                          {staffUsers.map(s => <option key={s.username} value={s.username}>{s.username}</option>)}
+                          <option value="master">Master Admin</option>
+                        </optgroup>
+                      </select>
+                      <button style={BS('#2563eb', '#fff', 'none', '100%')} onClick={handleCustodyTransfer}>Update Custody</button>
+                    </div>
+                  )}
                 </div>
 
                 <div className="card" style={{ background: '#fff', border: '1px solid #e8e8e8' }}>

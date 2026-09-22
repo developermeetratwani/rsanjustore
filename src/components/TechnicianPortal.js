@@ -36,7 +36,11 @@ const StatCard = ({ icon, label, value, sub, color = '#fff', accent = '#1a1a1a' 
   </div>
 );
 
-const BillCard = ({ bill }) => (
+const BillCard = ({ bill }) => {
+  const isDeleted = bill.status === 'deleted';
+  const isRefunded = bill.status === 'refunded';
+  
+  return (
   <div style={{
     background: '#0d0d0d', border: '1px solid #1e1e1e', borderRadius: 14, padding: 20,
     transition: 'border-color 0.2s', cursor: 'default'
@@ -47,14 +51,14 @@ const BillCard = ({ bill }) => (
     {/* Header */}
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
       <div>
-        <div style={{ fontSize: 16, fontWeight: 700, color: '#fff' }}>{bill.deviceModel}</div>
+        <div style={{ fontSize: 16, fontWeight: 700, color: isDeleted ? '#666' : '#fff', textDecoration: isDeleted ? 'line-through' : 'none' }}>{bill.deviceModel}</div>
         <div style={{ fontSize: 12, color: '#555', marginTop: 2 }}>#{bill.billId || bill.id}</div>
       </div>
       <StatusBadge status={bill.status} />
     </div>
 
     {/* Details grid */}
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px', marginBottom: 14 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px', marginBottom: 14, opacity: isDeleted ? 0.5 : 1 }}>
       <Detail label="Customer" value={bill.customerName} />
       <Detail label="Phone" value={bill.customerPhone} />
       <Detail label="Service" value={bill.serviceType || '—'} />
@@ -62,26 +66,33 @@ const BillCard = ({ bill }) => (
     </div>
 
     {/* Financial row */}
-    <div style={{ background: '#111', border: '1px solid #222', borderRadius: 10, padding: '12px 14px', display: 'flex', gap: 0, justifyContent: 'space-between' }}>
-      <FinStat label="Bill Charged" value={fmt(bill.finalCharge)} color="#e5e7eb" />
-      <Divider />
-      <FinStat label="My Commission" value={fmt(bill.commission)} color="#10b981" />
-      <Divider />
-      <FinStat label="Store Profit" value={fmt(bill.storeProfit)} color="#6b7280" />
-    </div>
-
-    {bill.status === 'refunded' && (
-      <div style={{ marginTop: 10, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, padding: '8px 12px', fontSize: 12, color: '#f87171' }}>
-        ⚠️ This bill was refunded — commission may be reversed
+    {!isDeleted && (
+      <div style={{ background: '#111', border: '1px solid #222', borderRadius: 10, padding: '12px 14px', display: 'flex', gap: 0, justifyContent: 'space-between' }}>
+        <FinStat label="Bill Charged" value={fmt(bill.finalCharge)} color="#e5e7eb" />
+        <Divider />
+        <FinStat 
+          label="My Commission" 
+          value={<span style={{ textDecoration: isRefunded ? 'line-through' : 'none' }}>{fmt(bill.commission)}</span>} 
+          color={isRefunded ? '#f87171' : '#10b981'} 
+        />
+        <Divider />
+        <FinStat label="Store Profit" value={isRefunded ? `-${fmt(bill.storeProfit)}` : fmt(bill.storeProfit)} color="#6b7280" />
       </div>
     )}
-    {bill.status === 'deleted' && (
+
+    {isRefunded && (
+      <div style={{ marginTop: 10, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, padding: '8px 12px', fontSize: 12, color: '#f87171' }}>
+        ⚠️ This bill was refunded to the customer.
+      </div>
+    )}
+    {isDeleted && (
       <div style={{ marginTop: 10, background: 'rgba(156,163,175,0.08)', border: '1px solid rgba(156,163,175,0.2)', borderRadius: 8, padding: '8px 12px', fontSize: 12, color: '#9ca3af' }}>
-        🗑️ This bill was deleted by the admin
+        🗑️ This bill was deleted by the store admin. (No commission)
       </div>
     )}
   </div>
-);
+  );
+};
 
 const Detail = ({ label, value }) => (
   <div>
@@ -210,7 +221,9 @@ const TechnicianPortal = () => {
     const totalCommission  = completed.reduce((s, b) => s + (+b.commission || 0), 0);
     const totalBillCharged = completed.reduce((s, b) => s + (+b.finalCharge || 0), 0);
     const refundedComm     = refunded.reduce((s, b) => s + (+b.commission || 0), 0);
-    const netEarned        = totalCommission - refundedComm;
+    // Negative commissions from loss-making completed bills naturally lower this sum.
+    // Refunded bills are omitted from the sum, so they don't count, but aren't explicitly subtracted as a penalty.
+    const netEarned        = totalCommission;
 
     return { completed, active, refunded, deleted, totalCommission, totalBillCharged, refundedComm, netEarned };
   }, [bills]);
@@ -283,10 +296,10 @@ const TechnicianPortal = () => {
 
         {/* Stats Row */}
         <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
-          <StatCard icon="💰" label="Net Earned" value={fmt(stats.netEarned)} sub="Commission (after refunds)" color="#10b981" accent="#0a1a0f" />
+          <StatCard icon="💰" label="Net Earned" value={fmt(stats.netEarned)} sub="Total from completed jobs" color="#10b981" accent="#0a1a0f" />
           <StatCard icon="✅" label="Jobs Done" value={stats.completed.length} sub={`₹${stats.totalBillCharged.toFixed(0)} billed total`} color="#60a5fa" accent="#0a0f1a" />
           <StatCard icon="🔧" label="Active Jobs" value={stats.active.length} sub="Phones with you now" color="#fbbf24" accent="#1a1500" />
-          <StatCard icon="💸" label="Refunded" value={stats.refunded.length} sub={`-${fmt(stats.refundedComm)} comm. lost`} color="#f87171" accent="#1a0a0a" />
+          <StatCard icon="💸" label="Refunded" value={stats.refunded.length} sub="Returned to customer" color="#f87171" accent="#1a0a0a" />
         </div>
 
         {/* Tabs */}
@@ -360,7 +373,7 @@ const TechnicianPortal = () => {
                     <div style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>TOTAL ({bills.filter(b => b.status !== 'deleted').length} bills)</div>
                     <div style={{ fontSize: 13, fontWeight: 700, color: '#60a5fa' }}>{fmt(bills.filter(b => b.status !== 'deleted').reduce((s, b) => s + (+b.finalCharge || 0), 0))}</div>
                     <div style={{ fontSize: 14, fontWeight: 800, color: '#10b981' }}>{fmt(stats.netEarned)}</div>
-                    <div style={{ fontSize: 11, color: '#555' }}>net after refunds</div>
+                    <div style={{ fontSize: 11, color: '#555' }}>Net earned</div>
                   </div>
                 </div>
 
@@ -372,9 +385,9 @@ const TechnicianPortal = () => {
                     <div style={{ fontSize: 12, color: '#166534', marginTop: 4 }}>From {stats.completed.length} completed jobs</div>
                   </div>
                   <div style={{ background: '#1a0a0a', border: '1px solid #7f1d1d', borderRadius: 12, padding: 18 }}>
-                    <div style={{ fontSize: 11, color: '#dc2626', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>❌ Lost (Refunded)</div>
-                    <div style={{ fontSize: 28, fontWeight: 800, color: '#f87171' }}>-{fmt(stats.refundedComm)}</div>
-                    <div style={{ fontSize: 12, color: '#7f1d1d', marginTop: 4 }}>From {stats.refunded.length} refunded bill(s)</div>
+                    <div style={{ fontSize: 11, color: '#dc2626', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>⚠️ Refunded Jobs</div>
+                    <div style={{ fontSize: 28, fontWeight: 800, color: '#f87171' }}>{stats.refunded.length}</div>
+                    <div style={{ fontSize: 12, color: '#7f1d1d', marginTop: 4 }}>Returned to customer</div>
                   </div>
                 </div>
               </div>
@@ -426,7 +439,7 @@ const TechnicianPortal = () => {
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                   <h2 style={{ fontSize: 18, margin: 0, color: '#fff' }}>💸 Refunded Bills ({stats.refunded.length})</h2>
-                  <span style={{ fontSize: 14, color: '#f87171', fontWeight: 700 }}>Commission lost: -{fmt(stats.refundedComm)}</span>
+                  <span style={{ fontSize: 14, color: '#f87171', fontWeight: 700 }}>Returned to customer</span>
                 </div>
                 {stats.refunded.length === 0 ? (
                   <EmptyState icon="👍" msg="No refunded bills!" />
