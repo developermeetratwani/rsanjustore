@@ -30,7 +30,14 @@ const TechnicianSchema = new mongoose.Schema({
   totalEarnings: {
     type: Number,
     default: 0
-  }
+  },
+  completedJobs: [{
+    billId: String,
+    deviceModel: String,
+    customerName: String,
+    dateCompleted: Date,
+    commissionEarned: Number
+  }]
 });
 
 module.exports = mongoose.model('Technician', TechnicianSchema);

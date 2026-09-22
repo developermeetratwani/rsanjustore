@@ -10,10 +10,17 @@ async function syncTechnicianStats(repairerName) {
     const bills = await Bill.find({ repairerName, status: 'completed' });
     const jobsCompleted = bills.length;
     const totalEarnings = bills.reduce((sum, b) => sum + (Number(b.commission) || 0), 0);
+    const completedJobsList = bills.map(b => ({
+      billId: b.billId,
+      deviceModel: b.deviceModel,
+      customerName: b.customerName,
+      dateCompleted: b.completedAt || b.createdAt,
+      commissionEarned: Number(b.commission) || 0
+    })).sort((a, b) => new Date(b.dateCompleted) - new Date(a.dateCompleted));
     
     await Technician.findOneAndUpdate(
       { name: repairerName },
-      { jobsCompleted, totalEarnings }
+      { jobsCompleted, totalEarnings, completedJobs: completedJobsList }
     );
   } catch(e) {
     console.error('Error syncing tech stats', e);
