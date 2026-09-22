@@ -1,6 +1,24 @@
 const express = require('express');
 const router = express.Router();
 const Bill = require('../models/Bill');
+const Technician = require('../models/Technician');
+
+// Helper to keep MongoDB Technician stats in sync with bills
+async function syncTechnicianStats(repairerName) {
+  if (!repairerName) return;
+  try {
+    const bills = await Bill.find({ repairerName, status: 'completed' });
+    const jobsCompleted = bills.length;
+    const totalEarnings = bills.reduce((sum, b) => sum + (Number(b.commission) || 0), 0);
+    
+    await Technician.findOneAndUpdate(
+      { name: repairerName },
+      { jobsCompleted, totalEarnings }
+    );
+  } catch(e) {
+    console.error('Error syncing tech stats', e);
+  }
+}
 
 // Get all bills
 router.get('/', async (req, res) => {
@@ -67,6 +85,7 @@ router.post('/', async (req, res) => {
     });
 
     await newBill.save();
+    if (newBill.repairerName) await syncTechnicianStats(newBill.repairerName);
     res.status(201).json({ ...newBill.toObject(), id: newBill.billId });
   } catch (error) {
     if (error.code === 11000) {
@@ -97,6 +116,7 @@ router.put('/:id', async (req, res) => {
 
     // Strip frontend-only fields that shouldn't overwrite schema fields
     const { id: _id2, _id: _id3, __v, ...updateData } = req.body;
+    const originalRepairer = bill.repairerName;
 
     Object.assign(bill, updateData);
     if (req.body.customerPhone) {
@@ -106,6 +126,15 @@ router.put('/:id', async (req, res) => {
     if (req.body.completedAt) bill.completedAt = new Date(req.body.completedAt);
 
     await bill.save();
+    
+    // Sync both the old and new repairer if it changed
+    if (originalRepairer && originalRepairer !== bill.repairerName) {
+      await syncTechnicianStats(originalRepairer);
+    }
+    if (bill.repairerName) {
+      await syncTechnicianStats(bill.repairerName);
+    }
+
     res.json({ ...bill.toObject(), id: bill.billId });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -121,7 +150,10 @@ router.delete('/:id', async (req, res) => {
       ? { $or: [{ billId: id }, { _id: id }] }
       : { billId: id };
 
-    await Bill.findOneAndDelete(query);
+    const deletedBill = await Bill.findOneAndDelete(query);
+    if (deletedBill && deletedBill.repairerName) {
+      await syncTechnicianStats(deletedBill.repairerName);
+    }
     res.json({ message: 'Bill deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
