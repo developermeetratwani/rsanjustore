@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import RepairAdminPanel from './RepairAdminPanel';
 import './AdminLogin.css';
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = process.env.NODE_ENV === 'production' ? 'https://rsanjustore-36en.onrender.com/api' : 'http://localhost:5000/api';
 
 const RepairAdminLogin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(

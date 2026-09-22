@@ -68,7 +68,7 @@ const BillSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['in-progress', 'completed', 'refunded'],
+    enum: ['in-progress', 'completed', 'refunded', 'deleted'],
     default: 'in-progress'
   },
   notes: {

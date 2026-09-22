@@ -35,6 +35,11 @@ app.use('/api/technicians', technicianRoutes);
 app.use('/api/accountant', accountantRoutes);
 app.use('/api/bills', billRoutes);
 
+// Root endpoint for UptimeRobot health checks
+app.get('/', (req, res) => {
+  res.send('Backend API is running.');
+});
+
 // Health check endpoint — includes MongoDB state
 app.get('/api/health', (req, res) => {
   const dbState = mongoose.connection.readyState;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = process.env.NODE_ENV === 'production' ? 'https://rsanjustore-36en.onrender.com/api' : 'http://localhost:5000/api';
 
 const IS = {
   width: '100%', padding: '12px 14px', borderRadius: 8,
@@ -146,6 +146,8 @@ const TechnicianPortal = () => {
   const activeJobs = bills.filter(b => b.status === 'in-progress');
   const phonesInPossession = activeJobs;
 
+  const deletedMyBills = bills.filter(b => b.status === 'deleted');
+
   return (
     <div style={{ minHeight: '100vh', background: '#000', color: '#fff', padding: '20px' }}>
       <div style={{ maxWidth: 800, margin: '0 auto' }}>
@@ -186,6 +188,28 @@ const TechnicianPortal = () => {
                 </button>
               </div>
             ))}
+          </div>
+        )}
+
+        {deletedMyBills.length > 0 && (
+          <div style={{ marginTop: 40 }}>
+            <h2 style={{ fontSize: 18, marginBottom: 16, color: '#f87171' }}>🗑️ Deleted Jobs ({deletedMyBills.length})</h2>
+            <div style={{ display: 'grid', gap: 16 }}>
+              {deletedMyBills.map(bill => (
+                <div key={bill.id} style={{ background: '#111', border: '1px solid #450a0a', borderRadius: 12, padding: 16, opacity: 0.8 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+                    <div>
+                      <h3 style={{ margin: 0, fontSize: 16, textDecoration: 'line-through', color: '#888' }}>{bill.deviceModel}</h3>
+                      <div style={{ fontSize: 13, color: '#666', marginTop: 4 }}>Job ID: {bill.id}</div>
+                    </div>
+                    <span style={{ background: 'rgba(239, 68, 68, 0.2)', color: '#f87171', padding: '4px 8px', borderRadius: 6, fontSize: 11, fontWeight: 700 }}>Deleted by Admin</span>
+                  </div>
+                  <div style={{ fontSize: 14, color: '#666' }}>
+                    🔧 {bill.serviceType}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>

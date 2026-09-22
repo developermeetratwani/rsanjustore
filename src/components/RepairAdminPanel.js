@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './RepairAdminPanel.css';
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = process.env.NODE_ENV === 'production' ? 'https://rsanjustore-36en.onrender.com/api' : 'http://localhost:5000/api';
 
 // ---------- helpers ----------
 const LS = {
@@ -85,21 +85,31 @@ const printBill = (bill, repairers) => {
       </tfoot>
     </table>
 
-    <!-- FOOTER: T&C left | Sign right -->
-    <div class="footer">
-      <div class="terms">
-        <div class="terms-title">TERMS &amp; CONDITIONS</div>
-        <ol>
-          <li>No warranty on physical or liquid damage after device leaves our store.</li>
-          <li>We are not responsible for any data loss during repair.</li>
-          <li>Goods once sold cannot be returned or exchanged.</li>
-          <li>Devices not collected within 30 days may be disposed of.</li>
-        </ol>
-      </div>
-      <div class="sign">
-        <div class="sign-for">For R SANJU STORE</div>
-        <div class="sign-line"></div>
-        <div class="sign-label">Authorised Signatory</div>
+    <!-- ITEMS TABLE ends here without footer -->
+  </div>`;
+
+  const tcPage = `
+  <div class="page tc-page">
+    <div class="tc-header">TERMS &amp; CONDITIONS</div>
+    <div class="tc-content">
+      <ol>
+        <li>It is mandatory to bring the Job Sheet when collecting the repaired mobile phone. The mobile phone will not be handed over without the Job Sheet.</li>
+        <li>If the Job Sheet is not available, the customer must provide proper identification/proof of ownership before the mobile is handed over.</li>
+        <li>The customer will be responsible for any damage or loss caused to the mobile phone due to pre-existing conditions or issues during the repair process.</li>
+        <li>Customers must check their mobile phone and accessories at the time of receiving the device. The store will not be responsible for any missing accessories afterward.</li>
+        <li>The store will not be responsible for any data loss that occurs during the repair process.</li>
+        <li>The store will not be responsible for the password, PIN, pattern, or other lock information of the mobile phone.</li>
+        <li>An estimated repair time will be provided, but the actual completion time may vary depending on the repair/service required.</li>
+        <li>After repair, if the mobile phone does not function properly or returns to its previous condition, the customer will be responsible for the device.</li>
+        <li>Parts replaced during repair will not be returned.</li>
+        <li>Once a repair is cancelled or completed, the replaced parts cannot be requested back.</li>
+        <li>If the mobile phone gets damaged, switches off, or develops any issue while the repair is being carried out, the responsibility will remain with the customer as per the repair condition.</li>
+        <li>If one part is faulty and another part gets damaged during the repair process, the customer will be responsible for the affected part.</li>
+        <li>If the display, IC, or any other component gets damaged or develops a fault during/after the repair, the customer will be responsible for the complete repair/replacement cost.</li>
+      </ol>
+      <div class="tc-ack">
+        <div class="tc-ack-title">Customer Acknowledgement</div>
+        <div class="tc-ack-text">By submitting the device for repair, the customer agrees to the above Terms &amp; Conditions.</div>
       </div>
     </div>
   </div>`;
@@ -198,31 +208,6 @@ const printBill = (bill, repairers) => {
       .grand-label { font-size: 8.5pt; letter-spacing: 0.5px; }
       .grand-amt { font-size: 11pt; letter-spacing: 0.3px; }
 
-      /* ---- FOOTER ---- */
-      .footer {
-        display: flex; border-top: 1.5px solid #111;
-        min-height: 35mm;
-      }
-      .terms {
-        flex: 6.5; padding: 8px 12px;
-        border-right: 1px solid #111;
-        font-size: 7.5pt; line-height: 1.5; color: #333;
-      }
-      .terms-title {
-        font-size: 7pt; font-weight: 700; letter-spacing: 1px;
-        text-transform: uppercase; margin-bottom: 4px; color: #111;
-      }
-      .terms ol { padding-left: 14px; }
-      .terms li { margin-bottom: 2px; }
-      .sign {
-        flex: 3.5; padding: 10px 12px;
-        display: flex; flex-direction: column;
-        align-items: center; justify-content: flex-end;
-        text-align: center;
-      }
-      .sign-for { font-size: 8pt; font-weight: 700; margin-bottom: 28px; }
-      .sign-line { width: 80%; border-top: 1px solid #111; margin-bottom: 4px; }
-      .sign-label { font-size: 7.5pt; color: #555; }
 
       /* ---- UTILITIES ---- */
       .bold { font-weight: 700; }
@@ -232,9 +217,21 @@ const printBill = (bill, repairers) => {
 
       /* ---- PAGE BREAK ---- */
       .page-break { page-break-after: always; height: 8mm; }
+
+      /* ---- T&C PAGE ---- */
+      .tc-page { padding: 15px 20px; justify-content: flex-start; }
+      .tc-header { font-size: 10pt; font-weight: 700; text-align: center; margin-bottom: 10px; text-transform: uppercase; border-bottom: 1.5px solid #111; padding-bottom: 5px; }
+      .tc-content { font-size: 8pt; line-height: 1.35; }
+      .tc-content ol { padding-left: 18px; margin-bottom: 15px; }
+      .tc-content li { margin-bottom: 4px; text-align: justify; }
+      .tc-ack { margin-top: 15px; padding-top: 10px; border-top: 1px dashed #777; }
+      .tc-ack-title { font-size: 9pt; font-weight: 700; margin-bottom: 4px; }
+      .tc-ack-text { font-size: 8pt; font-style: italic; margin-bottom: 10px; }
     </style>
   </head><body>
     ${page('Customer Copy')}
+    <div class="page-break"></div>
+    ${tcPage}
     <div class="page-break"></div>
     ${page('Store Copy')}
   </body></html>`;
@@ -778,6 +775,27 @@ const RepairAdminPanel = ({ onLogout }) => {
     }
   };
 
+  const deleteBill = async (billId) => {
+    if (currentUser.role !== 'master') return alert('Only Master Admin can delete bills.');
+    if (!window.confirm('Are you sure you want to permanently delete this bill? This action cannot be undone.')) return;
+    try {
+      const res = await fetch(`${API_BASE}/bills/${billId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'deleted' })
+      });
+      if (res.ok) {
+        saveBills(bills.map(b => b.id === billId ? { ...b, status: 'deleted' } : b));
+        if (viewBill?.id === billId) setViewBill(null);
+        alert('Bill deleted successfully');
+      } else {
+        alert('Failed to delete bill on server');
+      }
+    } catch (e) {
+      alert('Network error while deleting bill');
+    }
+  };
+
   const refundBill = async (billId) => {
     if (!window.confirm('Are you sure you want to refund this bill? It will reverse revenue and commissions.')) return;
     const bill = bills.find(b => b.id === billId);
@@ -804,7 +822,7 @@ const RepairAdminPanel = ({ onLogout }) => {
 
   const sendWhatsApp = (bill) => {
     if (!bill.customerPhone) return;
-    const msg = encodeURIComponent(`Hello ${bill.customerName}! Thank you for choosing R Sanju Store. We hope you're happy with the service 😊 Please leave us a Google Review 🙏`);
+    const msg = encodeURIComponent(`Hello ${bill.customerName}! Thank you for choosing R Sanju Store. We hope you're happy with the service 😊 Please leave us a Google Review 🙏: https://share.google/9eVOobcsrXlsmEt3p`);
     const phone = bill.customerPhone.replace(/\D/g, '').slice(-10);
     // wa.me is the official universal link for WhatsApp, fixing iOS issues
     window.open(`https://wa.me/91${phone}?text=${msg}`, '_blank');
@@ -1110,6 +1128,7 @@ const RepairAdminPanel = ({ onLogout }) => {
                           )}
                           <button style={BS('#f5f5f4', '#636366', '1px solid #e0e0e0')} onClick={(e) => { e.stopPropagation(); printBill(bill, repairers); }}>Print</button>
                           <button style={BS('#f5f5f4', '#636366', '1px solid #e0e0e0')} onClick={(e) => { e.stopPropagation(); setViewBill(bill); }}>View</button>
+                          {currentUser.role === 'master' && <button style={BS('#fef2f2', '#b91c1c', '1px solid #fecaca')} onClick={(e) => { e.stopPropagation(); deleteBill(bill.id); }}>Delete</button>}
                         </div>
 
                         {/* Mobile Actions Button */}
@@ -1886,6 +1905,7 @@ const RepairAdminPanel = ({ onLogout }) => {
                     <button className="btn-draft" onClick={() => sendWhatsApp(viewBill)} style={{ borderColor: '#25D366', color: '#25D366' }}>📱 WhatsApp</button>
                   )}
                   <button className="btn-complete" onClick={() => printBill(viewBill, repairers)}>🖨️ Print Bill</button>
+                  {currentUser.role === 'master' && <button className="btn-cancel" style={{ borderColor: '#fecaca', color: '#b91c1c' }} onClick={() => { deleteBill(viewBill.id); setViewBill(null); }}>🗑️ Delete</button>}
                 </div>
               </motion.div>
             </motion.div>
@@ -1920,6 +1940,7 @@ const RepairAdminPanel = ({ onLogout }) => {
                   )}
                   <button style={{ ...IS, fontWeight: 600, padding: 14 }} onClick={() => { printBill(mobileActionBill, repairers); setMobileActionBill(null); }}>🖨️ Print Bill</button>
                   <button style={{ ...IS, fontWeight: 600, padding: 14 }} onClick={() => { setViewBill(mobileActionBill); setMobileActionBill(null); }}>👁️ View Details</button>
+                  {currentUser.role === 'master' && <button style={{ ...IS, background: '#fef2f2', color: '#b91c1c', borderColor: '#fecaca', fontWeight: 600, padding: 14 }} onClick={() => { deleteBill(mobileActionBill.id); setMobileActionBill(null); }}>🗑️ Delete Bill</button>}
                 </div>
               </motion.div>
             </motion.div>
