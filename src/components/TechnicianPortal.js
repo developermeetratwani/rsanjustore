@@ -127,6 +127,7 @@ const TechnicianPortal = () => {
   const [bills, setBills]               = useState([]);
   const [loading, setLoading]           = useState(false);
   const [activeTab, setActiveTab]       = useState('tally');
+  const [transferTargets, setTransferTargets] = useState({});
 
   // Fetch technician list for login dropdown
   useEffect(() => {
@@ -179,7 +180,11 @@ const TechnicianPortal = () => {
       });
       if (res.ok) {
         const allBills = await res.json();
-        const myBills = allBills.filter(b => b.repairerName === currentUser.name);
+        const myBills = allBills.filter(b => 
+          b.repairerName === currentUser.name || 
+          (b.custodyHistory?.length > 0 && b.custodyHistory[b.custodyHistory.length - 1].holder === currentUser.name) ||
+          (b.pendingCustody?.targetHolder === currentUser.name)
+        );
         setBills(myBills);
       }
     } catch (e) {
@@ -188,23 +193,66 @@ const TechnicianPortal = () => {
     setLoading(false);
   };
 
-  const updateCustody = async (billId, status) => {
+  const handleTransfer = async (billId, targetHolder) => {
+    if (!targetHolder) return;
     const bill = bills.find(b => (b.billId || b.id) === billId || b.id === billId);
     if (!bill) return;
-    const nowISO = new Date().toISOString();
-    const updatedHistory = [...(bill.custodyHistory || []), {
-      timestamp: nowISO,
-      holder: status === 'Store Front Desk' ? 'Store Front Desk' : currentUser.name,
-      updatedBy: currentUser.name,
-      notes: status === 'Store Front Desk' ? 'Returned to store after repair' : 'Updated by technician'
-    }];
-    const updatedBill = { ...bill, custodyHistory: updatedHistory };
+
+    let updatedBill = { ...bill };
+    if (targetHolder === 'Store Front Desk') {
+      const updatedHistory = [...(bill.custodyHistory || []), {
+        timestamp: new Date().toISOString(),
+        holder: 'Store Front Desk',
+        updatedBy: currentUser.name,
+        notes: 'Returned to store after repair'
+      }];
+      updatedBill.custodyHistory = updatedHistory;
+      updatedBill.pendingCustody = null;
+    } else {
+      updatedBill.pendingCustody = {
+        targetHolder,
+        transferredBy: currentUser.name,
+        timestamp: new Date().toISOString()
+      };
+    }
+
     setBills(bills.map(b => b.id === bill.id ? updatedBill : b));
+    setTransferTargets(prev => ({ ...prev, [bill.id]: '' }));
+    
     try {
       await fetch(`${API_BASE}/bills/${bill.billId || bill.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(updatedBill)
+        body: JSON.stringify({ ...updatedBill, pendingCustody: updatedBill.pendingCustody || null })
+      });
+    } catch {
+      alert('Network error');
+    }
+  };
+
+  const handlePending = async (billId, accept) => {
+    const bill = bills.find(b => (b.billId || b.id) === billId || b.id === billId);
+    if (!bill) return;
+
+    let updatedBill = { ...bill };
+    if (accept) {
+      const updatedHistory = [...(bill.custodyHistory || []), {
+        timestamp: new Date().toISOString(),
+        holder: currentUser.name,
+        updatedBy: currentUser.name,
+        notes: `Accepted transfer from ${bill.pendingCustody?.transferredBy}`
+      }];
+      updatedBill.custodyHistory = updatedHistory;
+    }
+    updatedBill.pendingCustody = null;
+
+    setBills(bills.map(b => b.id === bill.id ? updatedBill : b));
+    
+    try {
+      await fetch(`${API_BASE}/bills/${bill.billId || bill.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ ...updatedBill, pendingCustody: null })
       });
     } catch {
       alert('Network error');
@@ -213,20 +261,29 @@ const TechnicianPortal = () => {
 
   // ── Derived stats ──
   const stats = useMemo(() => {
-    const completed = bills.filter(b => b.status === 'completed');
-    const active    = bills.filter(b => b.status === 'in-progress');
-    const refunded  = bills.filter(b => b.status === 'refunded');
-    const deleted   = bills.filter(b => b.status === 'deleted');
+    const assigned = bills.filter(b => b.repairerName === currentUser?.name);
+    const completed = assigned.filter(b => b.status === 'completed');
+    const refunded  = assigned.filter(b => b.status === 'refunded');
+    const deleted   = assigned.filter(b => b.status === 'deleted');
+
+    const inMyCustody = bills.filter(b => {
+      if (b.status !== 'in-progress') return false;
+      const lastHolder = b.custodyHistory?.slice(-1)[0]?.holder;
+      if (lastHolder) return lastHolder === currentUser?.name;
+      return b.repairerName === currentUser?.name;
+    });
+
+    const active = inMyCustody.filter(b => !b.pendingCustody?.targetHolder);
+    const pendingOut = inMyCustody.filter(b => b.pendingCustody?.targetHolder);
+    const pendingIn = bills.filter(b => b.status === 'in-progress' && b.pendingCustody?.targetHolder === currentUser?.name);
 
     const totalCommission  = completed.reduce((s, b) => s + (+b.commission || 0), 0);
     const totalBillCharged = completed.reduce((s, b) => s + (+b.finalCharge || 0), 0);
     const refundedComm     = refunded.reduce((s, b) => s + (+b.commission || 0), 0);
-    // Negative commissions from loss-making completed bills naturally lower this sum.
-    // Refunded bills are omitted from the sum, so they don't count, but aren't explicitly subtracted as a penalty.
     const netEarned        = totalCommission;
 
-    return { completed, active, refunded, deleted, totalCommission, totalBillCharged, refundedComm, netEarned };
-  }, [bills]);
+    return { completed, active, pendingOut, pendingIn, refunded, deleted, totalCommission, totalBillCharged, refundedComm, netEarned };
+  }, [bills, currentUser]);
 
   // ─── LOGIN SCREEN ───
   if (!token) {
@@ -396,6 +453,26 @@ const TechnicianPortal = () => {
             {/* ── ACTIVE TAB ── */}
             {activeTab === 'active' && (
               <div>
+                {stats.pendingIn.length > 0 && (
+                  <div style={{ marginBottom: 32 }}>
+                    <h2 style={{ fontSize: 18, marginBottom: 16, color: '#fbbf24' }}>📥 Incoming Transfers ({stats.pendingIn.length})</h2>
+                    <div style={{ display: 'grid', gap: 14 }}>
+                      {stats.pendingIn.map(bill => (
+                        <div key={bill.id} style={{ border: '2px solid #b45309', borderRadius: 16, padding: 4, background: '#451a03' }}>
+                          <BillCard bill={bill} />
+                          <div style={{ display: 'flex', gap: 8, padding: '12px 12px 8px' }}>
+                            <div style={{ flex: 1, fontSize: 13, color: '#fbbf24', alignSelf: 'center' }}>
+                              ⚠️ <b>{bill.pendingCustody?.transferredBy}</b> sent this to you.
+                            </div>
+                            <button onClick={() => handlePending(bill.id, true)} style={{ background: '#10b981', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }}>Accept</button>
+                            <button onClick={() => handlePending(bill.id, false)} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }}>Reject</button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <h2 style={{ fontSize: 18, marginBottom: 20, color: '#fff' }}>🔧 Active Jobs — Phones With You ({stats.active.length})</h2>
                 {stats.active.length === 0 ? (
                   <EmptyState icon="🎉" msg="No active jobs — you're all clear!" />
@@ -404,14 +481,51 @@ const TechnicianPortal = () => {
                     {stats.active.map(bill => (
                       <div key={bill.id}>
                         <BillCard bill={bill} />
-                        <button
-                          onClick={() => updateCustody(bill.billId || bill.id, 'Store Front Desk')}
-                          style={{ marginTop: 8, width: '100%', padding: '12px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
-                        >
-                          ✅ Done — Return to Front Desk
-                        </button>
+                        <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
+                          <select 
+                            style={{ ...IS, flex: 1, padding: '12px', fontSize: 14 }}
+                            value={transferTargets[bill.id] || ''}
+                            onChange={e => setTransferTargets(prev => ({ ...prev, [bill.id]: e.target.value }))}
+                          >
+                            <option value="">-- Select to Transfer Custody --</option>
+                            <option value="Store Front Desk">Return to Store Front Desk</option>
+                            <optgroup label="Technicians">
+                              {techList.filter(t => t.name !== currentUser?.name).map(t => (
+                                <option key={t._id} value={t.name}>Transfer to {t.name}</option>
+                              ))}
+                            </optgroup>
+                          </select>
+                          <button
+                            disabled={!transferTargets[bill.id]}
+                            onClick={() => handleTransfer(bill.id, transferTargets[bill.id])}
+                            style={{ 
+                              padding: '0 20px', background: transferTargets[bill.id] ? '#2563eb' : '#333', 
+                              color: transferTargets[bill.id] ? '#fff' : '#888', border: 'none', 
+                              borderRadius: 10, fontWeight: 700, cursor: transferTargets[bill.id] ? 'pointer' : 'not-allowed' 
+                            }}
+                          >
+                            Send
+                          </button>
+                        </div>
                       </div>
                     ))}
+                  </div>
+                )}
+
+                {stats.pendingOut.length > 0 && (
+                  <div style={{ marginTop: 32 }}>
+                    <h2 style={{ fontSize: 18, marginBottom: 16, color: '#9ca3af' }}>⏳ Waiting for Approval ({stats.pendingOut.length})</h2>
+                    <div style={{ display: 'grid', gap: 14, opacity: 0.7 }}>
+                      {stats.pendingOut.map(bill => (
+                        <div key={bill.id}>
+                          <BillCard bill={bill} />
+                          <div style={{ marginTop: 8, background: '#1f2937', color: '#d1d5db', padding: '10px 14px', borderRadius: 10, fontSize: 13, display: 'flex', justifyContent: 'space-between' }}>
+                            <span>Pending transfer to <b>{bill.pendingCustody?.targetHolder}</b>...</span>
+                            <button onClick={() => handlePending(bill.id, false)} style={{ background: 'transparent', border: 'none', color: '#f87171', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>Cancel</button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>

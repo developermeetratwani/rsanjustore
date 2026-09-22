@@ -331,9 +331,9 @@ const RepairAdminPanel = ({ onLogout }) => {
       timestamp: nowISO(),
       holder: newCustodyHolder,
       updatedBy: currentUser.username,
-      notes: ''
+      notes: 'Admin overridden'
     }];
-    const updatedBill = { ...trackingBill, custodyHistory: updatedHistory };
+    const updatedBill = { ...trackingBill, custodyHistory: updatedHistory, pendingCustody: null };
     
     saveBills(bills.map(b => b.id === trackingBill.id ? updatedBill : b));
     setTrackingBill(updatedBill);
@@ -1535,6 +1535,9 @@ const RepairAdminPanel = ({ onLogout }) => {
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}><span style={{ color: '#6b7280' }}>Model:</span> <strong style={{ color: '#1c1c1e' }}>{trackingBill.deviceModel}</strong></div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}><span style={{ color: '#6b7280' }}>Status:</span> <strong style={{ color: '#1c1c1e' }}>{trackingBill.status}</strong></div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}><span style={{ color: '#6b7280' }}>Current Holder:</span> <strong style={{ color: '#d97706', fontSize: 16 }}>{trackingBill.custodyHistory?.slice(-1)[0]?.holder || 'Store Front Desk'}</strong></div>
+                  {trackingBill.pendingCustody && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}><span style={{ color: '#6b7280' }}>Pending Transfer:</span> <strong style={{ color: '#fbbf24', fontSize: 16 }}>To {trackingBill.pendingCustody.targetHolder}</strong></div>
+                  )}
                   
                   {trackingBill.status === 'deleted' ? (
                     <div style={{ marginTop: 24, padding: 16, border: '1px solid #fca5a5', borderRadius: 8, background: '#fef2f2', color: '#991b1b' }}>
@@ -1543,7 +1546,7 @@ const RepairAdminPanel = ({ onLogout }) => {
                     </div>
                   ) : (
                     <div style={{ marginTop: 24, padding: 16, border: '1px solid #e5e5e5', borderRadius: 8, background: '#f9fafb' }}>
-                      <h4 style={{ marginBottom: 12 }}>Transfer Custody</h4>
+                      <h4 style={{ marginBottom: 12 }}>Admin Override Transfer</h4>
                       <select 
                         style={{ ...IS, marginBottom: 12 }} 
                         value={newCustodyHolder} 
@@ -1569,18 +1572,31 @@ const RepairAdminPanel = ({ onLogout }) => {
 
                 <div className="card" style={{ background: '#fff', border: '1px solid #e8e8e8' }}>
                   <h3 style={{ fontSize: 16, marginBottom: 16, color: '#1c1c1e' }}>Custody Timeline</h3>
-                  {(trackingBill.custodyHistory || []).length === 0 && <p style={{ color: '#6b7280' }}>No tracking history recorded.</p>}
+                  {(trackingBill.custodyHistory || []).length === 0 && !trackingBill.pendingCustody && <p style={{ color: '#6b7280' }}>No tracking history recorded.</p>}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                    {(trackingBill.custodyHistory || []).map((h, i) => (
+                    {trackingBill.pendingCustody && (
+                      <div style={{ display: 'flex', gap: 12, opacity: 0.6 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                          <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#fbbf24', border: '2px solid #fff', outline: '2px dashed #fbbf24' }}></div>
+                          <div style={{ width: 2, flex: 1, background: '#e5e5e5', marginTop: 4 }}></div>
+                        </div>
+                        <div style={{ paddingBottom: 16 }}>
+                          <div style={{ fontWeight: 700, fontSize: 15, color: '#d97706' }}>Pending Transfer to {trackingBill.pendingCustody.targetHolder}</div>
+                          <div style={{ fontSize: 12, color: '#6b7280' }}>{fmtDate(trackingBill.pendingCustody.timestamp)}</div>
+                          <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>Sent by: {trackingBill.pendingCustody.transferredBy}</div>
+                        </div>
+                      </div>
+                    )}
+                    {(trackingBill.custodyHistory || []).slice().reverse().map((h, i) => (
                       <div key={i} style={{ display: 'flex', gap: 12 }}>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                          <div style={{ width: 12, height: 12, borderRadius: '50%', background: i === trackingBill.custodyHistory.length - 1 ? '#10b981' : '#d1d5db' }}></div>
+                          <div style={{ width: 12, height: 12, borderRadius: '50%', background: (i === 0 && !trackingBill.pendingCustody) ? '#10b981' : '#d1d5db' }}></div>
                           {i !== trackingBill.custodyHistory.length - 1 && <div style={{ width: 2, flex: 1, background: '#e5e5e5', marginTop: 4 }}></div>}
                         </div>
                         <div style={{ paddingBottom: i !== trackingBill.custodyHistory.length - 1 ? 16 : 0 }}>
-                          <div style={{ fontWeight: 700, fontSize: 15, color: i === trackingBill.custodyHistory.length - 1 ? '#1c1c1e' : '#4b5563' }}>{h.holder}</div>
+                          <div style={{ fontWeight: 700, fontSize: 15, color: (i === 0 && !trackingBill.pendingCustody) ? '#1c1c1e' : '#4b5563' }}>{h.holder}</div>
                           <div style={{ fontSize: 12, color: '#6b7280' }}>{fmtDate(h.timestamp)}</div>
-                          <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>Logged by: {h.updatedBy}</div>
+                          <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>Logged by: {h.updatedBy} {h.notes ? `• ${h.notes}` : ''}</div>
                         </div>
                       </div>
                     ))}

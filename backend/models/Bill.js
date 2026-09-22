@@ -81,6 +81,11 @@ const BillSchema = new mongoose.Schema({
     updatedBy: String,
     notes: String
   }],
+  pendingCustody: {
+    targetHolder: String,
+    transferredBy: String,
+    timestamp: Date
+  },
   createdAt: {
     type: Date,
     default: Date.now
