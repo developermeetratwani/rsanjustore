@@ -357,29 +357,16 @@ const RepairAdminPanel = ({ onLogout }) => {
   // ---------- Full sync from MongoDB (reusable) ----------
   const syncFromMongoDB = async ({ silent = false } = {}) => {
     if (!silent) setIsSyncing(true);
-    let connected = false;
 
-    // Check health first
+    // Skip health check gate — directly try to fetch bills.
+    // Render free tier can take 30-60s to wake up, so a 5s health
+    // check would always fail and block everything. We let the bills
+    // fetch itself tell us whether the server is reachable.
     try {
-      const hRes = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(5000) });
-      if (hRes.ok) {
-        const h = await hRes.json();
-        connected = h.db === 'connected';
-      }
-    } catch (_) { connected = false; }
-
-    setMongoConnected(connected);
-
-    if (!connected) {
-      if (!silent) setSyncBanner({ type: 'error', msg: '⚠️ Cannot reach backend server. Bills are saved locally only — sync when server is back online.' });
-      if (!silent) setIsSyncing(false);
-      return;
-    }
-
-    // Fetch bills from MongoDB
-    try {
-      const res = await fetch(`${API_BASE}/bills`, { signal: AbortSignal.timeout(10000) });
+      // Give Render up to 60 seconds to wake up on first request
+      const res = await fetch(`${API_BASE}/bills`, { signal: AbortSignal.timeout(60000) });
       if (res.ok) {
+        setMongoConnected(true);
         const cloudBills = await res.json();
         // Merge: cloud is source of truth, but preserve any pending local bills not yet in cloud
         const pending = getPendingQueue();
@@ -400,7 +387,8 @@ const RepairAdminPanel = ({ onLogout }) => {
               const r = await fetch(`${API_BASE}/bills`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(pendingBill)
+                body: JSON.stringify(pendingBill),
+                signal: AbortSignal.timeout(30000)
               });
               if (r.ok || r.status === 200) removeFromPendingQueue(pendingBill.id);
             } catch (_) { /* will retry next time */ }
@@ -416,11 +404,13 @@ const RepairAdminPanel = ({ onLogout }) => {
           if (!silent) { setSyncBanner({ type: 'success', msg: '✅ Synced with MongoDB.' }); setTimeout(() => setSyncBanner(null), 3000); }
         }
       } else {
+        setMongoConnected(false);
         setSyncBanner({ type: 'error', msg: '❌ Failed to fetch bills from MongoDB. Showing local data.' });
       }
     } catch (err) {
+      setMongoConnected(false);
       console.warn('MongoDB bills fetch warning:', err);
-      setSyncBanner({ type: 'error', msg: '❌ Network error fetching bills. Showing local data.' });
+      if (!silent) setSyncBanner({ type: 'error', msg: '❌ Network error fetching bills. Showing local data.' });
     }
 
     if (!silent) setIsSyncing(false);
@@ -691,13 +681,13 @@ const RepairAdminPanel = ({ onLogout }) => {
     }
     setShowBillForm(false);
 
-    // Sync to MongoDB Atlas — show visible error if it fails
+    // Sync to MongoDB Atlas — 60s timeout so Render has time to wake up from sleep
     try {
       const r = await fetch(`${API_BASE}/bills`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bill),
-        signal: AbortSignal.timeout(8000)
+        signal: AbortSignal.timeout(60000)
       });
       if (r.ok || r.status === 200) {
         // Confirmed saved to MongoDB
