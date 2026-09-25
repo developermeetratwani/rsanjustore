@@ -95,4 +95,11 @@ const BillSchema = new mongoose.Schema({
   }
 });
 
+// Speeds up the common query patterns: bill list sorted by date, per-technician
+// stats lookups (syncTechnicianStats), and status/phone filtering.
+BillSchema.index({ createdAt: -1 });
+BillSchema.index({ repairerName: 1, status: 1 });
+BillSchema.index({ status: 1 });
+BillSchema.index({ customerPhone: 1 });
+
 module.exports = mongoose.model('Bill', BillSchema);

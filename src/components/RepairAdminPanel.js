@@ -242,6 +242,66 @@ const printBill = (bill, repairers) => {
   setTimeout(() => { w.print(); }, 600);
 };
 
+// Narrow receipt for 80mm thermal printers — single copy, no T&C page, monospace layout.
+const printThermalBill = (bill) => {
+  const issuer = bill.billedBy || bill.recipientName || 'master';
+  const dateStr = fmtDate(bill.createdAt);
+  const rs = n => `Rs ${(+n || 0).toFixed(2)}`;
+
+  const expenseRows = (bill.expenses || []).map(e =>
+    `<div class="row sub"><span>+ ${e.name}</span><span>${rs(e.cost)}</span></div>`
+  ).join('');
+
+  const html = `<!DOCTYPE html><html><head>
+    <meta charset="utf-8"/>
+    <title>Receipt ${bill.id}</title>
+    <style>
+      @page { size: 80mm auto; margin: 2mm; }
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: 'Courier New', Courier, monospace; width: 76mm; font-size: 11px; color: #000; }
+      .center { text-align: center; }
+      .bold { font-weight: 700; }
+      .divider { border-top: 1px dashed #000; margin: 6px 0; }
+      .row { display: flex; justify-content: space-between; gap: 6px; padding: 1.5px 0; font-size: 11px; }
+      .row span:first-child { color: #222; }
+      .row.sub { padding-left: 10px; font-size: 10px; }
+      .store-name { font-size: 15px; letter-spacing: 0.5px; }
+      .tagline { font-size: 9px; letter-spacing: 1px; margin-top: 2px; }
+      .small { font-size: 9.5px; margin-top: 1px; }
+      .total-row { font-size: 13px; padding-top: 3px; }
+      .footer { font-size: 9px; margin-top: 8px; text-align: center; line-height: 1.4; }
+    </style>
+  </head><body>
+    <div class="center bold store-name">R SANJU STORE</div>
+    <div class="center tagline">MOBILE REPAIR &amp; ACCESSORIES</div>
+    <div class="center small">206-207, B Block, Gita Mandir Rd, Dharmyug Colony</div>
+    <div class="center small">Gita Mandir, Ahmedabad, Gujarat 380022</div>
+    <div class="center small">Ph: 9274282930</div>
+    <div class="divider"></div>
+    <div class="row"><span>Invoice</span><span class="bold">${bill.id}</span></div>
+    <div class="row"><span>Date</span><span>${dateStr}</span></div>
+    <div class="row"><span>Billed By</span><span>${issuer}</span></div>
+    <div class="divider"></div>
+    <div class="row"><span>Customer</span><span>${bill.customerName}</span></div>
+    <div class="row"><span>Phone</span><span>${bill.customerPhone}</span></div>
+    <div class="row"><span>Device</span><span>${bill.deviceModel}${bill.phoneColor ? ' (' + bill.phoneColor + ')' : ''}</span></div>
+    ${bill.phonePassword ? `<div class="row"><span>Password</span><span>${bill.phonePassword}</span></div>` : ''}
+    <div class="row"><span>Service</span><span>${bill.serviceType || '-'}</span></div>
+    <div class="divider"></div>
+    <div class="row"><span>Repair Service</span><span>${rs(bill.finalCharge)}</span></div>
+    ${expenseRows}
+    <div class="divider"></div>
+    <div class="row bold total-row"><span>TOTAL</span><span>${rs(bill.finalCharge)}</span></div>
+    <div class="divider"></div>
+    <div class="footer">Job Sheet required at pickup.<br/>Store not responsible for pre-existing<br/>data/lock issues. Thank you!</div>
+  </body></html>`;
+
+  const w = window.open('', '_blank', 'width=380,height=650');
+  w.document.write(html);
+  w.document.close();
+  setTimeout(() => { w.print(); }, 500);
+};
+
 // ===================== MAIN COMPONENT =====================
 const RepairAdminPanel = ({ onLogout }) => {
   const [currentUser] = useState(() => {
@@ -263,6 +323,7 @@ const RepairAdminPanel = ({ onLogout }) => {
   const [searchTriggered, setSearchTriggered] = useState(false);
   const [showAllBills, setShowAllBills] = useState(false);
   const [billsStatusFilter, setBillsStatusFilter] = useState('all');
+  const [billsDateRange, setBillsDateRange] = useState({ startDate: '', endDate: '' });
 
   // Staff and MongoDB connection state
   const [staffUsers, setStaffUsers] = useState([]);
@@ -343,7 +404,7 @@ const RepairAdminPanel = ({ onLogout }) => {
     try {
       await fetch(`${API_BASE}/bills/${trackingBill.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${currentUser.token || ''}` },
         body: JSON.stringify(updatedBill)
       });
     } catch (e) {
@@ -376,7 +437,10 @@ const RepairAdminPanel = ({ onLogout }) => {
     // fetch itself tell us whether the server is reachable.
     try {
       // Give Render up to 60 seconds to wake up on first request
-      const res = await fetch(`${API_BASE}/bills`, { signal: AbortSignal.timeout(60000) });
+      const res = await fetch(`${API_BASE}/bills`, {
+        headers: { Authorization: `Bearer ${currentUser.token || ''}` },
+        signal: AbortSignal.timeout(60000)
+      });
       if (res.ok) {
         setMongoConnected(true);
         const cloudBills = await res.json();
@@ -398,7 +462,7 @@ const RepairAdminPanel = ({ onLogout }) => {
             try {
               const r = await fetch(`${API_BASE}/bills`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${currentUser.token || ''}` },
                 body: JSON.stringify(pendingBill),
                 signal: AbortSignal.timeout(30000)
               });
@@ -697,7 +761,7 @@ const RepairAdminPanel = ({ onLogout }) => {
     try {
       const r = await fetch(`${API_BASE}/bills`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${currentUser.token || ''}` },
         body: JSON.stringify(bill),
         signal: AbortSignal.timeout(60000)
       });
@@ -749,7 +813,7 @@ const RepairAdminPanel = ({ onLogout }) => {
     try {
       await fetch(`${API_BASE}/bills/${target.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${currentUser.token || ''}` },
         body: JSON.stringify(target)
       });
     } catch (e) {
@@ -777,7 +841,7 @@ const RepairAdminPanel = ({ onLogout }) => {
     try {
       await fetch(`${API_BASE}/bills/${billId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${currentUser.token || ''}` },
         body: JSON.stringify(updatedBill)
       });
     } catch (e) {
@@ -791,7 +855,7 @@ const RepairAdminPanel = ({ onLogout }) => {
     try {
       const res = await fetch(`${API_BASE}/bills/${billId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${currentUser.token || ''}` },
         body: JSON.stringify({ status: 'deleted' })
       });
       if (res.ok) {
@@ -814,7 +878,7 @@ const RepairAdminPanel = ({ onLogout }) => {
     try {
       const res = await fetch(`${API_BASE}/bills/${billId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${currentUser.token || ''}` },
         body: JSON.stringify({ status: 'refunded' })
       });
       if (res.ok) {
@@ -1033,11 +1097,11 @@ const RepairAdminPanel = ({ onLogout }) => {
         {/* ---- BILLS ---- */}
         {activeTab === 'bills' && (
           <div>
-            <div className="bills-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <div className="bills-filter-row" style={{ display: 'flex', alignItems: 'center', gap: 10, overflow: 'hidden' }}>
+            <div className="bills-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
+              <div className="bills-filter-row" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                 <h2 className="section-title" style={{ flexShrink: 0 }}>Bills</h2>
                 <button
-                  onClick={() => setShowAllBills(v => !v)}
+                  onClick={() => { setShowAllBills(v => !v); setBillsDateRange({ startDate: '', endDate: '' }); }}
                   style={{
                     background: showAllBills ? '#1c1c1e' : '#f5f5f4',
                     border: '1px solid',
@@ -1076,12 +1140,44 @@ const RepairAdminPanel = ({ onLogout }) => {
                     </button>
                   ))}
                 </div>
+                <div style={{ width: '1px', height: '20px', background: '#e0e0e0', margin: '0 4px', flexShrink: 0 }}></div>
+                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                  <input
+                    type="date"
+                    value={billsDateRange.startDate}
+                    onChange={e => { setBillsDateRange(r => ({ ...r, startDate: e.target.value })); setShowAllBills(true); }}
+                    style={{ padding: '4px 8px', fontSize: 12, borderRadius: 6, border: '1px solid #e0e0e0' }}
+                  />
+                  <span style={{ color: '#9ca3af', fontSize: 12 }}>to</span>
+                  <input
+                    type="date"
+                    value={billsDateRange.endDate}
+                    onChange={e => { setBillsDateRange(r => ({ ...r, endDate: e.target.value })); setShowAllBills(true); }}
+                    style={{ padding: '4px 8px', fontSize: 12, borderRadius: 6, border: '1px solid #e0e0e0' }}
+                  />
+                  {(billsDateRange.startDate || billsDateRange.endDate) && (
+                    <button
+                      onClick={() => setBillsDateRange({ startDate: '', endDate: '' })}
+                      style={{ background: 'none', border: 'none', color: '#b91c1c', fontSize: 12, cursor: 'pointer', fontWeight: 500 }}
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
               </div>
               <button className="btn-create-bill" style={{ flexShrink: 0 }} onClick={() => openBillForm()}>+ New Bill</button>
             </div>
             {(() => {
-              const baseBills = showAllBills
-                ? bills.slice(0, 200)
+              const { startDate, endDate } = billsDateRange;
+              const baseBills = (startDate || endDate)
+                ? bills.filter(b => {
+                    const d = getLocalDateStr(b.createdAt);
+                    if (startDate && d < startDate) return false;
+                    if (endDate && d > endDate) return false;
+                    return true;
+                  })
+                : showAllBills
+                ? bills
                 : bills.filter(b =>
                     getLocalDateStr(b.createdAt) === today ||
                     getLocalDateStr(b.completedAt) === today ||
@@ -1090,13 +1186,17 @@ const RepairAdminPanel = ({ onLogout }) => {
               const displayBills = baseBills.filter(b => billsStatusFilter === 'all' || b.status === billsStatusFilter);
 
               if (displayBills.length === 0) {
+                const rangeActive = startDate || endDate;
                 return (
                   <div className="empty-state" style={{ padding: 40 }}>
                     <div className="empty-icon">💰</div>
-                    <h3>No Bills for Today</h3>
+                    <h3>{rangeActive ? 'No Bills in This Date Range' : showAllBills ? 'No Bills Found' : 'No Bills for Today'}</h3>
                     <p style={{ color: '#aaa', marginTop: 10 }}>
-                      Today's bills are shown here automatically.<br/>
-                      Click <strong style={{ color: '#93c5fd' }}>📋 All Bills</strong> above to see all records, or use the <strong>Search</strong> tab.<br/>
+                      {rangeActive
+                        ? <>Try a wider date range, or click <strong style={{ color: '#b91c1c' }}>Clear</strong> above to reset it.<br/></>
+                        : !showAllBills
+                        ? <>Today's bills are shown here automatically.<br/>Click <strong style={{ color: '#93c5fd' }}>All</strong> above to see all records, or use the <strong>Search</strong> tab.<br/></>
+                        : null}
                       {getPendingQueue().length > 0 && (
                         <span style={{ color: '#fb923c' }}>⚠️ {getPendingQueue().length} bill(s) are pending MongoDB sync.</span>
                       )}
@@ -1159,7 +1259,8 @@ const RepairAdminPanel = ({ onLogout }) => {
                               <button style={BS('#fef2f2', '#b91c1c', '1px solid #fecaca')} onClick={(e) => { e.stopPropagation(); refundBill(bill.id); }}>Refund</button>
                             </>
                           )}
-                          <button style={BS('#f5f5f4', '#636366', '1px solid #e0e0e0')} onClick={(e) => { e.stopPropagation(); printBill(bill, repairers); }}>Print</button>
+                          <button style={BS('#f5f5f4', '#636366', '1px solid #e0e0e0')} onClick={(e) => { e.stopPropagation(); printBill(bill, repairers); }}>Standard</button>
+                          <button style={BS('#f5f5f4', '#636366', '1px solid #e0e0e0')} onClick={(e) => { e.stopPropagation(); printThermalBill(bill); }}>Thermal</button>
                           <button style={BS('#f5f5f4', '#636366', '1px solid #e0e0e0')} onClick={(e) => { e.stopPropagation(); setViewBill(bill); }}>View</button>
                           {currentUser.role === 'master' && <button style={BS('#fef2f2', '#b91c1c', '1px solid #fecaca')} onClick={(e) => { e.stopPropagation(); deleteBill(bill.id); }}>Delete</button>}
                         </div>
@@ -1605,6 +1706,7 @@ const RepairAdminPanel = ({ onLogout }) => {
                             <>
                               <button style={BS('#25D366', '#fff')} onClick={() => sendWhatsApp(bill)}>📱 WhatsApp</button>
                               <button style={BS('#111', '#aaa', '1px solid #333')} onClick={() => printBill(bill, repairers)}>🖨️ Print</button>
+                              <button style={BS('#111', '#aaa', '1px solid #333')} onClick={() => printThermalBill(bill)}>🧾 Thermal</button>
                             </>
                           )}
                           <button style={BS('#111', '#888', '1px solid #333')} onClick={() => setViewBill(bill)}>👁️ View</button>
@@ -2106,6 +2208,7 @@ const RepairAdminPanel = ({ onLogout }) => {
                     <button className="btn-draft" onClick={() => sendWhatsApp(viewBill)} style={{ borderColor: '#25D366', color: '#25D366' }}>📱 WhatsApp</button>
                   )}
                   <button className="btn-complete" onClick={() => printBill(viewBill, repairers)}>🖨️ Print Bill</button>
+                  <button className="btn-draft" onClick={() => printThermalBill(viewBill)}>🧾 Thermal Print</button>
                   {currentUser.role === 'master' && <button className="btn-cancel" style={{ borderColor: '#fecaca', color: '#b91c1c' }} onClick={() => { deleteBill(viewBill.id); setViewBill(null); }}>🗑️ Delete</button>}
                 </div>
               </motion.div>
@@ -2139,7 +2242,8 @@ const RepairAdminPanel = ({ onLogout }) => {
                       <button style={{ ...IS, background: '#fef2f2', color: '#b91c1c', borderColor: '#fecaca', fontWeight: 600, padding: 14 }} onClick={() => { refundBill(mobileActionBill.id); setMobileActionBill(null); }}>💸 Process Refund</button>
                     </>
                   )}
-                  <button style={{ ...IS, fontWeight: 600, padding: 14 }} onClick={() => { printBill(mobileActionBill, repairers); setMobileActionBill(null); }}>🖨️ Print Bill</button>
+                  <button style={{ ...IS, fontWeight: 600, padding: 14 }} onClick={() => { printBill(mobileActionBill, repairers); setMobileActionBill(null); }}>🖨️ Standard Print</button>
+                  <button style={{ ...IS, fontWeight: 600, padding: 14 }} onClick={() => { printThermalBill(mobileActionBill); setMobileActionBill(null); }}>🧾 Thermal Print</button>
                   <button style={{ ...IS, fontWeight: 600, padding: 14 }} onClick={() => { setViewBill(mobileActionBill); setMobileActionBill(null); }}>👁️ View Details</button>
                   {currentUser.role === 'master' && <button style={{ ...IS, background: '#fef2f2', color: '#b91c1c', borderColor: '#fecaca', fontWeight: 600, padding: 14 }} onClick={() => { deleteBill(mobileActionBill.id); setMobileActionBill(null); }}>🗑️ Delete Bill</button>}
                 </div>

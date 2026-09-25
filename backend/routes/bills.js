@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Bill = require('../models/Bill');
 const Technician = require('../models/Technician');
+const { verifyToken, requireRole } = require('../middleware/auth');
 
 // Helper to keep MongoDB Technician stats in sync with bills
 async function syncTechnicianStats(repairerName) {
@@ -27,10 +28,19 @@ async function syncTechnicianStats(repairerName) {
   }
 }
 
-// Get all bills
-router.get('/', async (req, res) => {
+// Get all bills — optionally narrowed to a date range (?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD)
+// so the frontend's Bills-tab date filter doesn't have to pull the whole collection.
+router.get('/', verifyToken, requireRole(['master', 'sub_admin', 'technician']), async (req, res) => {
   try {
-    const bills = await Bill.find().sort({ createdAt: -1 });
+    const { startDate, endDate } = req.query;
+    const query = {};
+    if (startDate || endDate) {
+      query.createdAt = {};
+      if (startDate) query.createdAt.$gte = new Date(`${startDate}T00:00:00`);
+      if (endDate) query.createdAt.$lte = new Date(`${endDate}T23:59:59.999`);
+    }
+
+    const bills = await Bill.find(query).sort({ createdAt: -1 });
     // Always return id = billId so frontend never needs to guess _id vs billId
     const mapped = bills.map(b => ({
       ...b.toObject(),
@@ -43,7 +53,7 @@ router.get('/', async (req, res) => {
 });
 
 // Create a new bill
-router.post('/', async (req, res) => {
+router.post('/', verifyToken, requireRole(['master', 'sub_admin']), async (req, res) => {
   try {
     const {
       billId, customerName, customerPhone, deviceModel, phoneColor, phonePassword,
@@ -92,7 +102,9 @@ router.post('/', async (req, res) => {
     });
 
     await newBill.save();
-    if (newBill.repairerName) await syncTechnicianStats(newBill.repairerName);
+    // Don't make the caller wait on the stats recompute — it's a side effect, not
+    // part of the bill-creation result, and it re-scans that technician's bills.
+    if (newBill.repairerName) syncTechnicianStats(newBill.repairerName);
     res.status(201).json({ ...newBill.toObject(), id: newBill.billId });
   } catch (error) {
     if (error.code === 11000) {
@@ -107,7 +119,7 @@ router.post('/', async (req, res) => {
 });
 
 // Update a bill
-router.put('/:id', async (req, res) => {
+router.put('/:id', verifyToken, requireRole(['master', 'sub_admin', 'technician']), async (req, res) => {
   try {
     const id = req.params.id;
     // Always prefer billId match; fallback to _id if it looks like an ObjectId
@@ -133,13 +145,13 @@ router.put('/:id', async (req, res) => {
     if (req.body.completedAt) bill.completedAt = new Date(req.body.completedAt);
 
     await bill.save();
-    
-    // Sync both the old and new repairer if it changed
+
+    // Sync both the old and new repairer if it changed — fire-and-forget, same reasoning as create.
     if (originalRepairer && originalRepairer !== bill.repairerName) {
-      await syncTechnicianStats(originalRepairer);
+      syncTechnicianStats(originalRepairer);
     }
     if (bill.repairerName) {
-      await syncTechnicianStats(bill.repairerName);
+      syncTechnicianStats(bill.repairerName);
     }
 
     res.json({ ...bill.toObject(), id: bill.billId });
@@ -149,7 +161,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // Delete a bill
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', verifyToken, requireRole(['master', 'sub_admin']), async (req, res) => {
   try {
     const id = req.params.id;
     const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(id);
@@ -159,7 +171,7 @@ router.delete('/:id', async (req, res) => {
 
     const deletedBill = await Bill.findOneAndDelete(query);
     if (deletedBill && deletedBill.repairerName) {
-      await syncTechnicianStats(deletedBill.repairerName);
+      syncTechnicianStats(deletedBill.repairerName);
     }
     res.json({ message: 'Bill deleted successfully' });
   } catch (error) {
