@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="R Sanju Store, Ahmedabad">
+  <defs>
+    <path id="top" d="M28,100 A72,72 0 0 1 172,100" />
+    <path id="bottom" d="M18,100 A82,82 0 0 0 182,100" />
+  </defs>
+  <circle cx="100" cy="100" r="98" fill="#16130f" />
+  <circle cx="100" cy="100" r="94" fill="#ffb81c" />
+  <circle cx="100" cy="100" r="88" fill="none" stroke="#16130f" stroke-width="1.2" />
+  <circle cx="100" cy="100" r="60" fill="#16130f" />
+  <circle cx="100" cy="100" r="64" fill="none" stroke="#16130f" stroke-width="1.2" />
+  <g font-family="'Arial Black', 'Helvetica Neue', Arial, sans-serif" font-weight="900" fill="#16130f" text-anchor="middle">
+    <text font-size="15" letter-spacing="1.5"><textPath href="#top" startOffset="50%">R SANJU STORE</textPath></text>
+    <text font-size="13" letter-spacing="4"><textPath href="#bottom" startOffset="50%">AHMEDABAD</textPath></text>
+    <text x="20" y="105" font-size="11">★</text>
+    <text x="180" y="105" font-size="11">★</text>
+  </g>
+  <rect x="70" y="70" width="60" height="60" rx="11" fill="#2a251f" stroke="#ffb81c" stroke-width="4" />
+  <path d="M74,112 C86,104 96,116 108,108 C116,103 122,106 126,104 L126,120 a6,6 0 0 1 -6,6 L80,126 a6,6 0 0 1 -6,-6 Z" fill="#8a6510" />
+  <line x1="100" y1="72" x2="100" y2="128" stroke="#cfc6b6" stroke-width="2" />
+  <line x1="77" y1="80" x2="90" y2="80" stroke="#a39a8d" stroke-width="2.5" stroke-linecap="round" />
+  <circle cx="121" cy="79" r="2.6" fill="#0e0c09" />
+  <path d="M140,72 l2.4,6 6,2.4 -6,2.4 -2.4,6 -2.4,-6 -6,-2.4 6,-2.4 Z" fill="#ffb81c" />
+</svg>

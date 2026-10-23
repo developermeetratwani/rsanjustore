@@ -1,51 +1,32 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
-import Hero from './components/Hero';
-import MegaOffers from './components/MegaOffers';
-import ProductShowcase from './components/ProductShowcase';
-import SpecialBanner from './components/SpecialBanner';
-import RepairServices from './components/RepairServices';
-import CustomerReviews from './components/CustomerReviews';
-import Contact from './components/Contact';
-import Footer from './components/Footer';
-import LoadingScreen from './components/LoadingScreen';
-import PopupOffer from './components/PopupOffer';
-import FloatingButtons from './components/FloatingButtons';
-import ParticleBackground from './components/ParticleBackground';
-import MusicToggle from './components/MusicToggle';
 import AdminRoute from './components/AdminRoute';
 import RepairAdminLogin from './components/RepairAdminLogin';
-import ProductDetails from './components/ProductDetails';
 import TechnicianPortal from './components/TechnicianPortal';
+import Home from './site/Home';
+import ProductPage from './site/ProductPage';
+import { Header, Footer } from './site/Chrome';
 
-function MainWebsite() {
-  const [loading, setLoading] = useState(true);
-  const [showPopup, setShowPopup] = useState(false);
+const NoIndex = ({ title, children }) => (
+  <>
+    <title>{title}</title>
+    <meta name="robots" content="noindex, nofollow" />
+    {children}
+  </>
+);
 
-  useEffect(() => {
-    // Loading screen
-    setTimeout(() => {
-      setLoading(false);
-      setTimeout(() => setShowPopup(true), 1000);
-    }, 3000);
-  }, []);
-
+function NotFound() {
   return (
-    <div className="App">
-      {loading && <LoadingScreen />}
-      <ParticleBackground />
-      <MusicToggle />
-      <FloatingButtons />
-      {showPopup && <PopupOffer onClose={() => setShowPopup(false)} />}
-      
-      <Hero />
-      <SpecialBanner />
-      <MegaOffers />
-      <ProductShowcase />
-      <RepairServices />
-      <CustomerReviews />
-      <Contact />
+    <div className="site">
+      <title>Page not found – R Sanju Store</title>
+      <meta name="robots" content="noindex" />
+      <Header />
+      <main className="wrap section empty-page">
+        <h1>Page not found</h1>
+        <p className="muted">The page you are looking for does not exist or has moved.</p>
+        <a className="btn btn-accent" href="/">Back to home</a>
+      </main>
       <Footer />
     </div>
   );
@@ -55,11 +36,12 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<MainWebsite />} />
-        <Route path="/product/:id" element={<ProductDetails />} />
-        <Route path="/admin" element={<AdminRoute />} />
-        <Route path="/repair-admin" element={<RepairAdminLogin />} />
-        <Route path="/technician" element={<TechnicianPortal />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/product/:id" element={<ProductPage />} />
+        <Route path="/admin" element={<NoIndex title="Admin – R Sanju Store"><AdminRoute /></NoIndex>} />
+        <Route path="/repair-admin" element={<NoIndex title="Repair Admin – R Sanju Store"><RepairAdminLogin /></NoIndex>} />
+        <Route path="/technician" element={<NoIndex title="Technician Portal – R Sanju Store"><TechnicianPortal /></NoIndex>} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );

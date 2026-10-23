@@ -11,9 +11,19 @@
       "**/node_modules/**"
     ],
     "rewrites": [
+      { "source": "/product/**", "destination": "/index.html" },
+      { "source": "/admin", "destination": "/index.html" },
+      { "source": "/repair-admin", "destination": "/index.html" },
+      { "source": "/technician", "destination": "/index.html" }
+    ],
+    "headers": [
       {
-        "source": "**",
-        "destination": "/index.html"
+        "source": "/static/**",
+        "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+      },
+      {
+        "source": "/(admin|repair-admin|technician)",
+        "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
       }
     ]
   }
