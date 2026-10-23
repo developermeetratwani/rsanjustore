@@ -4,4 +4,4 @@ Disallow: /admin
 Disallow: /repair-admin
 Disallow: /technician
 
-Sitemap: https://r-sanju-c8615.web.app/sitemap.xml
+Sitemap: https://r-sanju.web.app/sitemap.xml

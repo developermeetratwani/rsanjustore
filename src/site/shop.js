@@ -8,7 +8,7 @@ export const SHOP = {
   instagram: 'https://www.instagram.com/rsanju_phone_hub',
   maps: 'https://maps.app.goo.gl/jf9DvPm4ByUyWSdd7',
   address: ['Gita Mandir Road, Raipur Gate', 'Ahmedabad – 380002, Gujarat'],
-  origin: 'https://r-sanju-c8615.web.app'
+  origin: 'https://r-sanju.web.app'
 };
 
 export const PRICE_NOTE = 'Prices shown are a guide only. The original and final price of every phone and repair is decided in person at the store, after we check the device.';

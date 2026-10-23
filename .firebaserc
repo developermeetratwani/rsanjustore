@@ -1,7 +1,7 @@
 {
   "projects": {
-    "default": "r-sanju-c8615",
-    "production": "r-sanju-c8615"
+    "default": "r-sanju",
+    "production": "r-sanju"
   },
   "targets": {},
   "etags": {}
