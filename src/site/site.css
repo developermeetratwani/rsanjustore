@@ -42,7 +42,7 @@
 .site .header-in { display: flex; align-items: center; gap: 20px; min-height: 64px; }
 .site .brand { display: flex; align-items: center; gap: 8px; font: 800 1.25rem 'Bricolage Grotesque', sans-serif; letter-spacing: -0.02em; margin-right: auto; }
 .site .brand img { width: 44px; height: 44px; }
-.site .note { margin-top: 10px; padding: 10px 14px; border-left: 3px solid var(--accent); background: color-mix(in srgb, var(--mark) 22%, var(--card)); font-size: .9rem; color: #3d362e; max-width: 70ch; }
+.site .note { margin-top: 10px; padding: 10px 14px; border: 1.5px dashed #b9ac96; border-radius: 10px; background: color-mix(in srgb, var(--mark) 22%, var(--card)); font-size: .9rem; color: #3d362e; max-width: 70ch; }
 .site .disclaimer { grid-column: 1 / -1; font-size: .8rem; }
 .site .nav { display: flex; gap: 22px; font-weight: 500; }
 .site .nav a:hover { text-decoration: underline; text-underline-offset: 5px; }
